@@ -5,6 +5,7 @@ local AnalyzerRegistry = {} :: AnalyzerRegistryClass & AnalyzerRegistryType
 AnalyzerRegistry.__index = AnalyzerRegistry
 
 -- // Services & Requires
+local SoundService: SoundService = game:GetService('SoundService')
 
 -- // Variables & Constants
 const rbxassetid = 'rbxassetid://'
@@ -12,34 +13,49 @@ const rbxassetid = 'rbxassetid://'
 -- // Tables & Types
 export type AnalyzerRegistryClass = {
 	__index: AnalyzerRegistryClass,
-	new: () -> AnalyzerRegistryType,
+	new: ( AnalyzerRegistryProperties: AnalyzerRegistryPropertiesType ) -> AnalyzerRegistryType,
 }
 export type AnalyzerRegistryType = {
 	AudioPlayer: AudioPlayer,
 	AudioAnalyzer: AudioAnalyzer,
 	
+	SetName   : ( AnalyzerRegistryType , Name   : string?  ) -> AnalyzerRegistryType,
 	SetSoundId: ( AnalyzerRegistryType , SoundId: number   ) -> AnalyzerRegistryType,
 	SetLooping: ( AnalyzerRegistryType , Looping: boolean? ) -> AnalyzerRegistryType,
 }
 
+type AnalyzerRegistryPropertiesType = {
+	WindowSize: Enum.AudioWindowSize?
+}
+
 -- // Functions
 
-function AnalyzerRegistry:SetSoundId( SoundId: number )
+function AnalyzerRegistry:SetName( Name: string? ): AnalyzerRegistryType
+	if type( Name ) ~= 'string' then
+		warn( 'Given Name is not a string.' )
+		return self
+	end
+	self.AudioPlayer.Name = Name
+	return self
+end
+
+function AnalyzerRegistry:SetSoundId( SoundId: number ): AnalyzerRegistryType
 	if type( SoundId ) ~= 'number' then
 		warn( 'Could not assign AudioPlayer.Asset. Given SoundId is not a number.' )
 		return self
 	end
-	self.AudioPlayer.Asset = string.format( '%s%d' , rbxassetid , Properties.SoundId )
+	self.AudioPlayer.Asset = string.format( '%s%d' , rbxassetid , SoundId )
+	return self
 end
 
-function AnalyzerRegistry:SetLooping( Boolean: boolean? )
+function AnalyzerRegistry:SetLooping( Boolean: boolean? ): AnalyzerRegistryType
 	self.AudioPlayer.Looping = Boolean or false
 	return self
 end
 
-function AnalyzerRegistry.new()
+function AnalyzerRegistry.new( AnalyzerRegistryProperties: AnalyzerRegistryPropertiesType )
 	local AudioPlayer = Instance.new('AudioPlayer')
-	--AudioPlayer.Parent =
+	AudioPlayer.Parent = SoundService
 	
 	local AudioDeviceOutput = Instance.new('AudioDeviceOutput')
 	AudioDeviceOutput.Parent = AudioPlayer
@@ -49,7 +65,7 @@ function AnalyzerRegistry.new()
 	OutputWire.Parent = AudioPlayer
 	
 	local AudioAnalyzer = Instance.new('AudioAnalyzer')
-	AudioAnalyzer.WindowSize = Enum.AudioWindowSize.Large
+	AudioAnalyzer.WindowSize = AnalyzerRegistryProperties.WindowSize or Enum.AudioWindowSize.Large
 	AudioAnalyzer.Parent = AudioPlayer
 	local AnalyzeWire = Instance.new('Wire')
 	AnalyzeWire.SourceInstance = AudioPlayer
@@ -59,7 +75,7 @@ function AnalyzerRegistry.new()
 	return setmetatable( {
 		AudioPlayer = AudioPlayer,
 		AudioAnalyzer = AudioAnalyzer,
-	} , AnalyzerRegistry )
+	} :: AnalyzerRegistryType , AnalyzerRegistry )
 end
 
 return AnalyzerRegistry

@@ -5,36 +5,44 @@ local Erika = {}
 Erika.__index = Erika
 
 -- // Services & Requires
-local SoundService: SoundService = game:GetService('SoundService')
-
 local AnalyzerRegistry = require('@self/AnalyzerRegistry')
+local BeatRegistry     = require('@self/BeatRegistry')
 
 -- // Variables & Constants
 
 -- // Tables & Types
 export type ErikaClass = {
 	__index: ErikaClass,
-	Parent: Folder,
 }
 
 export type ErikaPropertiesType = {
+	Name: string?,
+	
+	WindowSize: Enum.AudioWindowSize?,
 	SoundId: number,
 	Looping: boolean?,
 }
 
 -- // Functions
 
-function Erika.new( ErikaProperties: ErikaPropertiesType )
-	local AnalyzerEntry = AnalyzerRegistry.new()
-		:SetSoundId( ErikaProperties.SoundId )
-		:SetLooping( ErikaProperties.Looping )
+function Erika:Play()
+	-- AnalyzerRegistry:Play()
 end
 
-do
-	local Folder = Instance.new('Folder')
-	Folder.Name = 'Erika'
-	Folder.Parent = SoundService
-	Erika.Parent = Folder
+function Erika:Stop()
+	
+end
+
+function Erika:Create()
+	
+end
+
+function Erika.new( ErikaProperties: ErikaPropertiesType )
+	local AnalyzerEntry = AnalyzerRegistry.new{ WindowSize = ErikaProperties.WindowSize }
+		:SetSoundId( ErikaProperties.SoundId )
+		:SetLooping( ErikaProperties.Looping )
+		:SetName   ( ErikaProperties.Name    )
+	
 end
 
 return Erika
