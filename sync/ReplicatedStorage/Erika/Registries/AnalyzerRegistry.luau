@@ -24,7 +24,9 @@ export type AnalyzerRegistryType = {
 	SetLooping: ( AnalyzerRegistryType , Looping: boolean? ) -> AnalyzerRegistryType,
 }
 
-type AnalyzerRegistryPropertiesType = {
+export type AnalyzerRegistryPropertiesType = {
+	ExistingAudioPlayer: AudioPlayer?,
+	ExistingAudioAnalyzer: AudioAnalyzer?,
 	WindowSize: Enum.AudioWindowSize?
 }
 
@@ -54,23 +56,29 @@ function AnalyzerRegistry:SetLooping( Boolean: boolean? ): AnalyzerRegistryType
 end
 
 function AnalyzerRegistry.new( AnalyzerRegistryProperties: AnalyzerRegistryPropertiesType )
-	local AudioPlayer = Instance.new('AudioPlayer')
-	AudioPlayer.Parent = SoundService
+	local AudioPlayer = AnalyzerRegistryProperties.ExistingAudioPlayer
+	if not AudioPlayer then
+		AudioPlayer = Instance.new('AudioPlayer')
+		AudioPlayer.Parent = SoundService
+		
+		local AudioDeviceOutput = Instance.new('AudioDeviceOutput')
+		AudioDeviceOutput.Parent = AudioPlayer
+		local OutputWire = Instance.new('Wire')
+		OutputWire.SourceInstance = AudioPlayer
+		OutputWire.TargetInstance = AudioDeviceOutput
+		OutputWire.Parent = AudioPlayer
+	end
 	
-	local AudioDeviceOutput = Instance.new('AudioDeviceOutput')
-	AudioDeviceOutput.Parent = AudioPlayer
-	local OutputWire = Instance.new('Wire')
-	OutputWire.SourceInstance = AudioPlayer
-	OutputWire.TargetInstance = AudioDeviceOutput
-	OutputWire.Parent = AudioPlayer
-	
-	local AudioAnalyzer = Instance.new('AudioAnalyzer')
-	AudioAnalyzer.WindowSize = AnalyzerRegistryProperties.WindowSize or Enum.AudioWindowSize.Large
-	AudioAnalyzer.Parent = AudioPlayer
-	local AnalyzeWire = Instance.new('Wire')
-	AnalyzeWire.SourceInstance = AudioPlayer
-	AnalyzeWire.TargetInstance = AudioAnalyzer
-	AnalyzeWire.Parent = AudioPlayer
+	local AudioAnalyzer = AnalyzerRegistryProperties.ExistingAudioAnalyzer
+	if not AudioAnalyzer then
+		AudioAnalyzer = Instance.new('AudioAnalyzer')
+		AudioAnalyzer.WindowSize = AnalyzerRegistryProperties.WindowSize or Enum.AudioWindowSize.Large
+		AudioAnalyzer.Parent = AudioPlayer
+		local AnalyzeWire = Instance.new('Wire')
+		AnalyzeWire.SourceInstance = AudioPlayer
+		AnalyzeWire.TargetInstance = AudioAnalyzer
+		AnalyzeWire.Parent = AudioPlayer
+	end
 	
 	return setmetatable( {
 		AudioPlayer = AudioPlayer,
