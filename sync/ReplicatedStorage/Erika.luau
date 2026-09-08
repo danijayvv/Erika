@@ -1,3 +1,7 @@
-local module = {}
+-- © 2026 iM1GHTB3DANI/danijayvv
+--!strict
 
-return module
+local Erika = {}
+
+
+return Erika
