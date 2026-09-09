@@ -49,7 +49,7 @@ Tangela:Set{
 }
 ```
 > [!NOTE]
-> `Erika` is the class. `Tangela` is the object created by `Erika.new()`.
+> `Erika` is the class. `Tangela` is the object created by `Erika.new`.
 
 `Erika.new` accepts optional constructor parameters that must be provided when creating the object. These parameters cannot be added after creation. `Tangela:Set` handles properties that can be configured or changed after the object has been created.
 
