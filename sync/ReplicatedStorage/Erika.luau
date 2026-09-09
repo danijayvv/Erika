@@ -6,8 +6,9 @@ local ErikaConstructors = {} :: ErikaType & { __index: ErikaType }
 ErikaConstructors.__index = ErikaConstructors
 
 -- // Services & Requires
-local AnalyzerRegistry = require('./Erika/Registries/AnalyzerRegistry')
-local BeatRegistry     = require('./Erika/Registries/BeatRegistry')
+local AnalyzerRegistry   = require('./Erika/Registries/AnalyzerRegistry')
+local BeatRegistry       = require('./Erika/Registries/BeatRegistry')
+local VisualizerRegistry = require('./Erika/Registries/VisualizerRegistry')
 
 local Signal = require('./Erika/Signal')
 
@@ -18,13 +19,14 @@ export type ErikaClass = {
 	new: ( Name: string? , AudioProperties: AnalyzerRegistry.AudioPropertiesType? ) -> ErikaType,
 }
 export type ErikaType = {
+	AudioPlayer: AudioPlayer,
 	AnalyzerEntry: typeof( AnalyzerRegistry.new{} ),
 	OnBeat: Signal.Signal<number>,
 	
 	Set: ( ErikaType , SoundPropertiesType ) -> ErikaType,
 	Play: ( ErikaType , SoundPropertiesType | number ) -> ErikaType,
 	Stop: ( ErikaType ) -> ErikaType,
-	Create: ( ErikaType ) -> ErikaType,
+	Create2D: ( ErikaType ) -> ErikaType,
 }
 
 type SoundPropertiesType = {
@@ -55,23 +57,24 @@ function ErikaConstructors:Play( SoundProperties: SoundPropertiesType? | number 
 	elseif SoundProperties then
 		SetSoundRelated( self , SoundProperties )
 	end
-	self.AnalyzerEntry.AudioPlayer:Play()
+	self.AudioPlayer:Play()
 	return self
 end
 
 function ErikaConstructors:Stop(): ErikaType
-	self.AnalyzerEntry.AudioPlayer:Stop()
+	self.AudioPlayer:Stop()
 	return self
 end
 
-function ErikaConstructors:Create(): ErikaType
+function ErikaConstructors:Create2D(): ErikaType
 	return self
 end
 
-function Erika.new( Name: string?, AudioProperties: AnalyzerRegistry.AudioPropertiesType? )
+function Erika.new( Name: string?, AudioProperties: AnalyzerRegistry.AudioPropertiesType? ): ErikaType
 	local AnalyzerEntry = AnalyzerRegistry.new( AudioProperties or {} ):SetName( Name )
 	
 	return setmetatable( {
+		AudioPlayer = AnalyzerEntry.AudioPlayer,
 		AnalyzerEntry = AnalyzerEntry,
 		OnBeat = BeatRegistry.Bind( AnalyzerEntry.AudioAnalyzer ),
 	} :: ErikaType , ErikaConstructors )
