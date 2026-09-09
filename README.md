@@ -33,21 +33,24 @@ You can have it all!
 3. Read the API below to get started
 
 ## API
-### `Erika.new`
+### `Erika.new` & `Tangela:Set`
 ```
 local Tangela = Erika.new( 'Tangela' , {
 	AudioPlayer = AUDIO_PLAYER_HERE,
 	AudioAnalyzer = AUDIO_ANALYZER_HERE,
 	WindowSize = Enum.AudioWindowSize.Large,
-} ):Set{
+} )
+
+Tangela:Set{
 	SoundId = SOUND_ID_HERE,
 	Looping = true,
 	PlaybackSpeed = 1.0,
 }
 ```
-An example using every available parameter; all of them are optional.
 > [!NOTE]
-> `Erika` is the class. `Tangela` is the object created from `Erika.new()`.
+> `Erika` is the class. `Tangela` is the object created by `Erika.new()`.
+
+`Erika.new` accepts optional constructor parameters that must be provided when creating the object. These parameters cannot be added after creation. `Tangela:Set` handles properties that can be configured or changed after the object has been created.
 
 ### `Tangela:Play`
 ```
