@@ -33,20 +33,18 @@ type SoundPropertiesType = {
 	SoundId: number?,
 	Looping: boolean?,
 	PlaybackSpeed: number?,
+	Volume: number?,
 }
 
 -- // Functions
 
 local function SetSoundRelated( self: ErikaType , SoundProperties: SoundPropertiesType ): ErikaType
-	if type( SoundProperties.SoundId ) == 'number' then
-		self.AnalyzerEntry:SetSoundId( SoundProperties.SoundId )
-	end
+	self.AnalyzerEntry:SetSoundId( SoundProperties.SoundId )
 	if type( SoundProperties.Looping ) == 'boolean' then
 		self.AnalyzerEntry:SetLooping( SoundProperties.Looping )
 	end
-	if type( SoundProperties.PlaybackSpeed ) == 'number' then
-		self.AnalyzerEntry:SetPlaybackSpeed( SoundProperties.PlaybackSpeed )
-	end
+	self.AnalyzerEntry:SetPlaybackSpeed( SoundProperties.PlaybackSpeed )
+	self.AnalyzerEntry:SetVolume( SoundProperties.Volume )
 	return self
 end
 ErikaConstructors.Set = SetSoundRelated

@@ -22,6 +22,7 @@ export type AnalyzerRegistryType = {
 	SetSoundId: ( AnalyzerRegistryType , SoundId: number? ) -> AnalyzerRegistryType,
 	SetLooping: ( AnalyzerRegistryType , Looping: boolean? ) -> AnalyzerRegistryType,
 	SetPlaybackSpeed: ( AnalyzerRegistryType , PlaybackSpeed: number? ) -> AnalyzerRegistryType,
+	SetVolume: ( AnalyzerRegistryType , Volume: number? ) -> AnalyzerRegistryType,
 	SetName: ( AnalyzerRegistryType , Name   : string? ) -> AnalyzerRegistryType,
 }
 
@@ -33,9 +34,13 @@ export type AudioPropertiesType = {
 
 -- // Functions
 
+local warnCNA = function( PropertyName: string , ParameterName: string | nil , Type: string )
+	warn( string.format( 'Could not assign AudioPlayer.%s; given %s is not a %s.' , PropertyName , ParameterName or PropertyName , Type ) )
+end
+
 function AnalyzerRegistry:SetSoundId( SoundId: number? ): AnalyzerRegistryType
 	if type( SoundId ) ~= 'number' then
-		warn( 'Could not assign AudioPlayer.Asset. Given SoundId is not a number.' )
+		warnCNA( 'Asset' , 'SoundId' , 'number' )
 		return self
 	end
 	self.AudioPlayer.Asset = string.format( '%s%d' , rbxassetid , SoundId )
@@ -49,16 +54,25 @@ end
 
 function AnalyzerRegistry:SetPlaybackSpeed( PlaybackSpeed: number? ): AnalyzerRegistryType
 	if type( PlaybackSpeed ) ~= 'number' then
-		warn( 'Could not assign AudioPlayer.PlaybackSpeed. Given PlaybackSpeed is not a number.')
+		warnCNA( 'PlaybackSpeed' , nil , 'number' )
 		return self
 	end
 	self.AudioPlayer.PlaybackSpeed = PlaybackSpeed
 	return self
 end
 
+function AnalyzerRegistry:SetVolume( Volume: number? ): AnalyzerRegistryType
+	if type( Volume ) ~= 'number' then
+		warnCNA( 'Volume' , nil , 'number' )
+		return self
+	end
+	self.AudioPlayer.Volume = Volume or 0.5
+	return self
+end
+
 function AnalyzerRegistry:SetName( Name: string? ): AnalyzerRegistryType
 	if type( Name ) ~= 'string' then
-		warn( 'Given Name is not a string.' )
+		warnCNA( 'Name' , nil , 'string' )
 		return self
 	end
 	self.AudioPlayer.Name = Name
