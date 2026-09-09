@@ -18,7 +18,8 @@ Erika.new():Play( SOUND_ID_HERE ).OnBeat:Connect(function( Scale: number )
 	UIScale.Scale = 1 + Scale * 0.5
 end)
 ```
-You can have it all!
+> [!TIP]
+> Methods are chainable, you can have it all!
 
 ## Features
 - One-line setup from `SoundId` to a playing, analyzable sound
@@ -33,30 +34,33 @@ You can have it all!
 3. Read the API below to get started
 
 ## API
-### `Erika.new`
+### `Erika.new` & `Tangela:Set`
 ```
-local Tangela = Erika.new( 'Tangela' , {
+local Tangela = Erika.new( string , {
 	AudioPlayer = AUDIO_PLAYER_HERE,
 	AudioAnalyzer = AUDIO_ANALYZER_HERE,
-	WindowSize = Enum.AudioWindowSize.Large,
-} ):Set{
+	WindowSize = Enum.AudioWindowSize[SIZE_HERE],
+} )
+
+Tangela:Set{
 	SoundId = SOUND_ID_HERE,
-	Looping = true,
-	PlaybackSpeed = 1.0,
+	Looping = boolean,
+	PlaybackSpeed = number,
 }
 ```
-An example using every available parameter; all of them are optional.
 > [!NOTE]
-> `Erika` is the class. `Tangela` is the object created from `Erika.new()`.
+> `Erika` is the class. `Tangela` is the object created by `Erika.new`.
+
+`Erika.new` accepts optional constructor parameters that must be provided when creating the object. These parameters cannot be added after creation. `Tangela:Set` handles properties that can be configured or changed after the object has been created.
 
 ### `Tangela:Play`
 ```
-Tangela:Play{ SoundId = SOUND_ID_HERE , Looping = true , PlaybackSpeed = 1.0 }
+Tangela:Play{ SoundId = SOUND_ID_HERE , Looping = boolean , PlaybackSpeed = number }
 Tangela:Play( SOUND_ID_HERE )
 ```
-Plays the sound, swapping in a new `SoundId`, `Looping`, or `PlaybackSpeed` if provided.
+Plays the sound, overriding `SoundId`, `Looping`, or `PlaybackSpeed` if provided.
 > [!NOTE]
-> Tangela:Play accepts either a table of options (for setting multiple properties at once) or just a SoundId number directly.
+> `Tangela:Play` accepts either a `table` of options (same syntax as `Tangela:Set`) or just a `SoundId` directly.
 
 ### `Tangela:Stop`
 ```
@@ -67,7 +71,7 @@ Stops the sound.
 ### `Tangela.OnBeat`
 ```
 Tangela.OnBeat:Connect(function( Scale: number )
-	
+	print( Scale )
 end)
 ```
 Fires every frame with a `Scale` value between `0` and `1`, derived from the spectrum data given by the `AudioAnalyzer`.
