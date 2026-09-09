@@ -18,10 +18,11 @@ export type AnalyzerRegistryClass = {
 export type AnalyzerRegistryType = {
 	AudioPlayer: AudioPlayer,
 	AudioAnalyzer: AudioAnalyzer,
-	
-	SetName   : ( AnalyzerRegistryType , Name   : string?  ) -> AnalyzerRegistryType,
-	SetSoundId: ( AnalyzerRegistryType , SoundId: number   ) -> AnalyzerRegistryType,
+
+	SetSoundId: ( AnalyzerRegistryType , SoundId: number? ) -> AnalyzerRegistryType,
 	SetLooping: ( AnalyzerRegistryType , Looping: boolean? ) -> AnalyzerRegistryType,
+	SetPlaybackSpeed: ( AnalyzerRegistryType , PlaybackSpeed: number? ) -> AnalyzerRegistryType,
+	SetName: ( AnalyzerRegistryType , Name   : string? ) -> AnalyzerRegistryType,
 }
 
 export type AnalyzerRegistryPropertiesType = {
@@ -32,16 +33,7 @@ export type AnalyzerRegistryPropertiesType = {
 
 -- // Functions
 
-function AnalyzerRegistry:SetName( Name: string? ): AnalyzerRegistryType
-	if type( Name ) ~= 'string' then
-		warn( 'Given Name is not a string.' )
-		return self
-	end
-	self.AudioPlayer.Name = Name
-	return self
-end
-
-function AnalyzerRegistry:SetSoundId( SoundId: number ): AnalyzerRegistryType
+function AnalyzerRegistry:SetSoundId( SoundId: number? ): AnalyzerRegistryType
 	if type( SoundId ) ~= 'number' then
 		warn( 'Could not assign AudioPlayer.Asset. Given SoundId is not a number.' )
 		return self
@@ -55,12 +47,30 @@ function AnalyzerRegistry:SetLooping( Boolean: boolean? ): AnalyzerRegistryType
 	return self
 end
 
+function AnalyzerRegistry:SetPlaybackSpeed( PlaybackSpeed: number? ): AnalyzerRegistryType
+	if type( PlaybackSpeed ) ~= 'number' then
+		warn( 'Could not assign AudioPlayer.PlaybackSpeed. Given PlaybackSpeed is not a number.')
+		return self
+	end
+	self.AudioPlayer.PlaybackSpeed = PlaybackSpeed
+	return self
+end
+
+function AnalyzerRegistry:SetName( Name: string? ): AnalyzerRegistryType
+	if type( Name ) ~= 'string' then
+		warn( 'Given Name is not a string.' )
+		return self
+	end
+	self.AudioPlayer.Name = Name
+	return self
+end
+
 function AnalyzerRegistry.new( AnalyzerRegistryProperties: AnalyzerRegistryPropertiesType )
 	local AudioPlayer = AnalyzerRegistryProperties.ExistingAudioPlayer
 	if not AudioPlayer then
 		AudioPlayer = Instance.new('AudioPlayer')
 		AudioPlayer.Parent = SoundService
-		
+
 		local AudioDeviceOutput = Instance.new('AudioDeviceOutput')
 		AudioDeviceOutput.Parent = AudioPlayer
 		local OutputWire = Instance.new('Wire')
@@ -68,7 +78,7 @@ function AnalyzerRegistry.new( AnalyzerRegistryProperties: AnalyzerRegistryPrope
 		OutputWire.TargetInstance = AudioDeviceOutput
 		OutputWire.Parent = AudioPlayer
 	end
-	
+
 	local AudioAnalyzer = AnalyzerRegistryProperties.ExistingAudioAnalyzer
 	if not AudioAnalyzer then
 		AudioAnalyzer = Instance.new('AudioAnalyzer')
@@ -79,7 +89,7 @@ function AnalyzerRegistry.new( AnalyzerRegistryProperties: AnalyzerRegistryPrope
 		AnalyzeWire.TargetInstance = AudioAnalyzer
 		AnalyzeWire.Parent = AudioPlayer
 	end
-	
+
 	return setmetatable( {
 		AudioPlayer = AudioPlayer,
 		AudioAnalyzer = AudioAnalyzer,
