@@ -35,16 +35,14 @@ You can have it all!
 ## API
 ### `Erika.new`
 ```
-local Tangela = Erika.new{
+local Tangela = Erika.new( 'Tangela' , {
+	AudioPlayer = AUDIO_PLAYER_HERE,
+	AudioAnalyzer = AUDIO_ANALYZER_HERE,
+	WindowSize = Enum.AudioWindowSize.Large,
+} ):Set{
 	SoundId = SOUND_ID_HERE,
 	Looping = true,
 	PlaybackSpeed = 1.0,
-	Name = 'Tangela',
-	AnalyzerRegistryProperties = {
-		ExistingAudioPlayer = AUDIO_PLAYER_HERE,
-		ExistingAudioAnalyzer = AUDIO_ANALYZER_HERE,
-		WindowSize = Enum.AudioWindowSize.Large,
-	},
 }
 ```
 An example using every available parameter; all of them are optional.
@@ -53,9 +51,12 @@ An example using every available parameter; all of them are optional.
 
 ### `Tangela:Play`
 ```
-Tangela:Play( SOUND_ID_HERE , LOOPING_HERE , PLAYBACK_SPEED_HERE )
+Tangela:Play{ SoundId = SOUND_ID_HERE , Looping = true , PlaybackSpeed = 1.0 }
+Tangela:Play( SOUND_ID_HERE )
 ```
 Plays the sound, swapping in a new `SoundId`, `Looping`, or `PlaybackSpeed` if provided.
+> [!NOTE]
+> Tangela:Play accepts either a table of options (for setting multiple properties at once) or just a SoundId number directly.
 
 ### `Tangela:Stop`
 ```
