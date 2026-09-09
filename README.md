@@ -56,7 +56,7 @@ Tangela:Play( SOUND_ID_HERE )
 ```
 Plays the sound, swapping in a new `SoundId`, `Looping`, or `PlaybackSpeed` if provided.
 > [!NOTE]
-> Tangela:Play accepts either a table of options (for setting multiple properties at once) or just a SoundId number directly.
+> `Tangela:Play` accepts either a `table` of options (for setting multiple properties at once) or just a `SoundId` directly.
 
 ### `Tangela:Stop`
 ```
