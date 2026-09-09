@@ -22,7 +22,7 @@ export type ErikaType = {
 	OnBeat: Signal.Signal<number>,
 	
 	Set: ( ErikaType , SoundPropertiesType ) -> ErikaType,
-	Play: ( ErikaType , SoundPropertiesType ) -> ErikaType,
+	Play: ( ErikaType , SoundPropertiesType | number ) -> ErikaType,
 	Stop: ( ErikaType ) -> ErikaType,
 	Create: ( ErikaType ) -> ErikaType,
 }
@@ -49,8 +49,10 @@ local function SetSoundRelated( self: ErikaType , SoundProperties: SoundProperti
 end
 ErikaConstructors.Set = SetSoundRelated
 
-function ErikaConstructors:Play( SoundProperties: SoundPropertiesType? ): ErikaType
-	if SoundProperties then
+function ErikaConstructors:Play( SoundProperties: SoundPropertiesType? | number ): ErikaType
+	if type( SoundProperties ) == 'number' then
+		SoundProperties = { SoundId = SoundProperties }
+	elseif SoundProperties then
 		SetSoundRelated( self , SoundProperties )
 	end
 	self.AnalyzerEntry.AudioPlayer:Play()
