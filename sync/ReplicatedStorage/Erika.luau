@@ -51,7 +51,7 @@ ErikaConstructors.Set = SetSoundRelated
 
 function ErikaConstructors:Play( SoundProperties: SoundPropertiesType? | number ): ErikaType
 	if type( SoundProperties ) == 'number' then
-		SoundProperties = { SoundId = SoundProperties }
+		self.AnalyzerEntry:SetSoundId( SoundProperties )
 	elseif SoundProperties then
 		SetSoundRelated( self , SoundProperties )
 	end
