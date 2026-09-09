@@ -13,7 +13,7 @@ const rbxassetid = 'rbxassetid://'
 -- // Tables & Types
 export type AnalyzerRegistryClass = {
 	__index: AnalyzerRegistryClass,
-	new: ( AnalyzerRegistryProperties: AnalyzerRegistryPropertiesType ) -> AnalyzerRegistryType,
+	new: ( AudioProperties: AudioPropertiesType ) -> AnalyzerRegistryType,
 }
 export type AnalyzerRegistryType = {
 	AudioPlayer: AudioPlayer,
@@ -25,10 +25,10 @@ export type AnalyzerRegistryType = {
 	SetName: ( AnalyzerRegistryType , Name   : string? ) -> AnalyzerRegistryType,
 }
 
-export type AnalyzerRegistryPropertiesType = {
-	ExistingAudioPlayer: AudioPlayer?,
-	ExistingAudioAnalyzer: AudioAnalyzer?,
-	WindowSize: Enum.AudioWindowSize?
+export type AudioPropertiesType = {
+	AudioPlayer: AudioPlayer?,
+	AudioAnalyzer: AudioAnalyzer?,
+	WindowSize: Enum.AudioWindowSize?,
 }
 
 -- // Functions
@@ -65,8 +65,8 @@ function AnalyzerRegistry:SetName( Name: string? ): AnalyzerRegistryType
 	return self
 end
 
-function AnalyzerRegistry.new( AnalyzerRegistryProperties: AnalyzerRegistryPropertiesType )
-	local AudioPlayer = AnalyzerRegistryProperties.ExistingAudioPlayer
+function AnalyzerRegistry.new( AudioProperties: AudioPropertiesType )
+	local AudioPlayer = AudioProperties.AudioPlayer
 	if not AudioPlayer then
 		AudioPlayer = Instance.new('AudioPlayer')
 		AudioPlayer.Parent = SoundService
@@ -78,11 +78,11 @@ function AnalyzerRegistry.new( AnalyzerRegistryProperties: AnalyzerRegistryPrope
 		OutputWire.TargetInstance = AudioDeviceOutput
 		OutputWire.Parent = AudioPlayer
 	end
-
-	local AudioAnalyzer = AnalyzerRegistryProperties.ExistingAudioAnalyzer
+	
+	local AudioAnalyzer = AudioProperties.AudioAnalyzer
 	if not AudioAnalyzer then
 		AudioAnalyzer = Instance.new('AudioAnalyzer')
-		AudioAnalyzer.WindowSize = AnalyzerRegistryProperties.WindowSize or Enum.AudioWindowSize.Large
+		AudioAnalyzer.WindowSize = AudioProperties.WindowSize or Enum.AudioWindowSize.Large
 		AudioAnalyzer.Parent = AudioPlayer
 		local AnalyzeWire = Instance.new('Wire')
 		AnalyzeWire.SourceInstance = AudioPlayer

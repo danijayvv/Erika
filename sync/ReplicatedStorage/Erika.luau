@@ -15,54 +15,60 @@ local Signal = require('./Erika/Signal')
 
 -- // Tables & Types
 export type ErikaClass = {
-	new: ( ErikaProperties: ErikaPropertiesType ) -> ErikaType,
+	new: ( Name: string? , AudioProperties: AnalyzerRegistry.AudioPropertiesType ) -> ErikaType,
 }
 export type ErikaType = {
 	AnalyzerEntry: typeof( AnalyzerRegistry.new{} ),
 	OnBeat: Signal.Signal<number>,
-
-	Play: ( ErikaType , SoundId: number? , Looping: boolean? , PlaybackSpeed: number? ) -> ErikaType,
+	
+	Set: ( ErikaType , SoundPropertiesType ) -> ErikaType,
+	Play: ( ErikaType , SoundPropertiesType ) -> ErikaType,
 	Stop: ( ErikaType ) -> ErikaType,
 	Create: ( ErikaType ) -> ErikaType,
 }
 
-export type ErikaPropertiesType = {
-	AnalyzerRegistryProperties: AnalyzerRegistry.AnalyzerRegistryPropertiesType?,
+type SoundPropertiesType = {
 	SoundId: number?,
 	Looping: boolean?,
 	PlaybackSpeed: number?,
-	Name: string?,
 }
 
 -- // Functions
 
-function ErikaConstructors:Play( SoundId: number? , Looping: boolean? , PlaybackSpeed: number? )
-	if SoundId then
-		self.AnalyzerEntry:SetSoundId( SoundId )
+local function SetSoundRelated( self: ErikaType , SoundProperties: SoundPropertiesType ): ErikaType
+	if type( SoundProperties.SoundId ) == 'number' then
+		self.AnalyzerEntry:SetSoundId( SoundProperties.SoundId )
 	end
-	if Looping then
-		self.AnalyzerEntry:SetLooping( Looping )
+	if type( SoundProperties.Looping ) == 'boolean' then
+		self.AnalyzerEntry:SetLooping( SoundProperties.Looping )
+	end
+	if type( SoundProperties.PlaybackSpeed ) == 'number' then
+		self.AnalyzerEntry:SetPlaybackSpeed( SoundProperties.PlaybackSpeed )
+	end
+	return self
+end
+ErikaConstructors.Set = SetSoundRelated
+
+function ErikaConstructors:Play( SoundProperties: SoundPropertiesType? ): ErikaType
+	if SoundProperties then
+		SetSoundRelated( self , SoundProperties )
 	end
 	self.AnalyzerEntry.AudioPlayer:Play()
 	return self
 end
 
-function ErikaConstructors:Stop()
+function ErikaConstructors:Stop(): ErikaType
 	self.AnalyzerEntry.AudioPlayer:Stop()
 	return self
 end
 
-function ErikaConstructors:Create()
+function ErikaConstructors:Create(): ErikaType
 	return self
 end
 
-function Erika.new( ErikaProperties: ErikaPropertiesType )
-	local AnalyzerEntry = AnalyzerRegistry.new( ErikaProperties.AnalyzerRegistryProperties or {} )
-		:SetSoundId( ErikaProperties.SoundId )
-		:SetLooping( ErikaProperties.Looping )
-		:SetPlaybackSpeed( ErikaProperties.PlaybackSpeed )
-		:SetName( ErikaProperties.Name )
-
+function Erika.new( Name: string?, AudioProperties: AnalyzerRegistry.AudioPropertiesType )
+	local AnalyzerEntry = AnalyzerRegistry.new( AudioProperties ):SetName( Name )
+	
 	return setmetatable( {
 		AnalyzerEntry = AnalyzerEntry,
 		OnBeat = BeatRegistry.Bind( AnalyzerEntry.AudioAnalyzer ),
