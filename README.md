@@ -1,9 +1,9 @@
-# 🌼 Erika 
-Music deserves to be seen.<br/>
-Erika makes audio visualization quick and simple.<br/>
-> Developed by Dani (danijayvv) @ [DXNVXV](https://dxnvxv.studio). <br/>
-<br/>
+# <img src="https://dxnvxv.studio/assets/images/image05.jpg?v=1ba4ae39" alt="🌼" width="25">  Erika 
+Music deserves to be seen. Erika makes audio visualization quick and simple.
+### <img src="https://dxnvxv.studio/assets/images/image04.jpg?v=1ba4ae39" alt="A bed of flowers" width="500">
+Developed by me, Dani (danijayvv) @ [DXNVXV](https://dxnvxv.studio). Art by my lovely girlfriend, Anne.
 
+## Philosophy
 Stop overcomplicating sounds, let's keep it simple:
 ```
 Erika.new():Play( SOUND_ID_HERE )
