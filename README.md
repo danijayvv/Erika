@@ -19,7 +19,7 @@ Erika.new():Play( SOUND_ID_HERE ).OnBeat:Connect(function( Scale: number )
 end)
 ```
 > [!TIP]
-> All methods are chainable! You can have it all!
+> Methods are chainable, you can have it all!
 
 ## Features
 - One-line setup from `SoundId` to a playing, analyzable sound
