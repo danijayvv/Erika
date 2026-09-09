@@ -15,7 +15,7 @@ local Signal = require('./Erika/Signal')
 
 -- // Tables & Types
 export type ErikaClass = {
-	new: ( Name: string? , AudioProperties: AnalyzerRegistry.AudioPropertiesType ) -> ErikaType,
+	new: ( Name: string? , AudioProperties: AnalyzerRegistry.AudioPropertiesType? ) -> ErikaType,
 }
 export type ErikaType = {
 	AnalyzerEntry: typeof( AnalyzerRegistry.new{} ),
@@ -66,8 +66,8 @@ function ErikaConstructors:Create(): ErikaType
 	return self
 end
 
-function Erika.new( Name: string?, AudioProperties: AnalyzerRegistry.AudioPropertiesType )
-	local AnalyzerEntry = AnalyzerRegistry.new( AudioProperties ):SetName( Name )
+function Erika.new( Name: string?, AudioProperties: AnalyzerRegistry.AudioPropertiesType? )
+	local AnalyzerEntry = AnalyzerRegistry.new( AudioProperties or {} ):SetName( Name )
 	
 	return setmetatable( {
 		AnalyzerEntry = AnalyzerEntry,
