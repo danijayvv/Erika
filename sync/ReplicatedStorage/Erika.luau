@@ -25,7 +25,7 @@ export type ErikaType = {
 	
 	Set: ( ErikaType , SoundPropertiesType ) -> ErikaType,
 	Play: ( ErikaType , SoundPropertiesType | number ) -> ErikaType,
-	Stop: ( ErikaType ) -> ErikaType,
+	Stop: ( ErikaType , ResetTimePosition: boolean? ) -> ErikaType,
 	Create2D: ( ErikaType ) -> ErikaType,
 }
 
@@ -61,8 +61,11 @@ function ErikaConstructors:Play( SoundProperties: SoundPropertiesType? | number 
 	return self
 end
 
-function ErikaConstructors:Stop(): ErikaType
+function ErikaConstructors:Stop( ResetTimePosition: boolean? ): ErikaType
 	self.AudioPlayer:Stop()
+	if ResetTimePosition then
+		self.AudioPlayer.TimePosition = 0
+	end
 	return self
 end
 
