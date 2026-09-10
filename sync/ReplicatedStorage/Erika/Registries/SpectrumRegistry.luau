@@ -11,33 +11,58 @@ local Signal = require('../Signal')
 local RAW_BIN_COUNT = 128
 local BIN_COUNT = 512
 local HZ_PER_BIN = ( 44100 / 2 ) / BIN_COUNT
-local MinHz , MaxHz = 20 , 20000
+local MIN_HZ , MAX_HZ = 20 , 20000
+
+SpectrumRegistry.RAW_BIN_COUNT = RAW_BIN_COUNT
+SpectrumRegistry.MIN_HZ = MIN_HZ
+SpectrumRegistry.MAX_HZ = MAX_HZ
 
 const max = math.max
 const min = math.min
 local round = math.round
 
 -- // Tables & Types
-local Bindings = {}
+local Bindings: { [AudioAnalyzer]: { Signal: SignalType , AGCMax: number , RefCount: number } } = {}
 local RawBinRanges = {}
+
+type SignalType = Signal.Signal<{ number }, number>
 
 -- // Functions
 
-function SpectrumRegistry.Bind( AudioAnalyzer: AudioAnalyzer ): Signal.Signal<{ number }, number>
+function SpectrumRegistry.HzToRawBin( Hz: number ): number
+	local T = math.log( Hz / MIN_HZ ) / math.log( MAX_HZ / MIN_HZ )
+	return max( 1 , min( RAW_BIN_COUNT , round( T * RAW_BIN_COUNT ) ) )
+end
+
+function SpectrumRegistry.Bind( AudioAnalyzer: AudioAnalyzer ): SignalType
+	local Existing = Bindings[AudioAnalyzer]
+	if Existing then
+		Existing.RefCount += 1
+		return Existing.Signal
+	end
+
 	local Changed = Signal.new()
-	Bindings[AudioAnalyzer] = { Signal = Changed , AGCMax = 0.001 }
+	Bindings[AudioAnalyzer] = { Signal = Changed , AGCMax = 0.001 , RefCount = 1 }
 	return Changed
 end
+
 function SpectrumRegistry.Unbind( AudioAnalyzer: AudioAnalyzer )
-	Bindings[AudioAnalyzer] = nil
+	local Info = Bindings[AudioAnalyzer]
+	if not Info then
+		return
+	end
+	Info.RefCount -= 1
+	if Info.RefCount <= 0 then
+		Bindings[AudioAnalyzer] = nil
+	end
 end
 
 do
 	for Index = 1, RAW_BIN_COUNT do
 		local T0 = ( Index - 1 ) / RAW_BIN_COUNT
 		local T1 = Index / RAW_BIN_COUNT
-		local StartHz = MinHz * ( MaxHz / MinHz ) ^ T0
-		local EndHz   = MinHz * ( MaxHz / MinHz ) ^ T1
+		local StartHz = MIN_HZ * ( MAX_HZ / MIN_HZ ) ^ T0
+		local EndHz   = MIN_HZ * ( MAX_HZ / MIN_HZ ) ^ T1
 		RawBinRanges[Index] = {
 			StartBin = max( 1 , min( BIN_COUNT , round( StartHz / HZ_PER_BIN ) ) ),
 			EndBin   = max( 1 , min( BIN_COUNT , round( EndHz   / HZ_PER_BIN ) ) ),

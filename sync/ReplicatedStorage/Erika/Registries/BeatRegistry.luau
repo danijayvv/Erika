@@ -9,13 +9,10 @@ local SpectrumRegistry = require('./SpectrumRegistry')
 local Signal = require('../Signal')
 
 -- // Variables & Constants
-local clamp = math.clamp
-local max   = math.max
-local min   = math.min
-local round = math.round
-
-local RAW_BIN_COUNT = 128
-local RAW_MIN_HZ , RAW_MAX_HZ = 20 , 20000
+const clamp = math.clamp
+const max   = math.max
+const min   = math.min
+const round = math.round
 
 -- // Tables & Types
 local Bindings: { [AudioAnalyzer]: InfoType } = {}
@@ -42,8 +39,8 @@ type InfoType = {
 
 local function CalculateBand( RawValues: { number } , Band: BandType ): number
 	local Sum, Count = 0, 0
-	for i = Band.StartBin, Band.EndBin do
-		Sum += RawValues[i] or 0
+	for Index = Band.StartBin, Band.EndBin do
+		Sum += RawValues[Index] or 0
 		Count += 1
 	end
 	local Value = Count > 0 and Sum / Count or 0
@@ -61,8 +58,7 @@ function BeatRegistry.Bind( AudioAnalyzer: AudioAnalyzer )
 		Bands[Index] = table.clone( Band )
 	end
 
-	local SpectrumChanged = SpectrumRegistry.Bind( AudioAnalyzer )
-	local Connection = SpectrumChanged:Connect(function( RawValues: { number } )
+	local Connection = SpectrumRegistry.Bind( AudioAnalyzer ):Connect(function( RawValues: { number } )
 		local Total = 0
 		for __ , Band in Bands do
 			Total += CalculateBand( RawValues , Band )
@@ -86,13 +82,9 @@ function BeatRegistry.Unbind( AudioAnalyzer: AudioAnalyzer )
 end
 
 do
-	local function HzToRawBin( Hz: number ): number
-		local T = math.log( Hz / RAW_MIN_HZ ) / math.log( RAW_MAX_HZ / RAW_MIN_HZ )
-		return max( 1 , min( RAW_BIN_COUNT , round( T * RAW_BIN_COUNT ) ) )
-	end
 	for __ , Band in FrequencyBands do
-		Band.StartBin = HzToRawBin( Band.MinHz )
-		Band.EndBin   = HzToRawBin( Band.MaxHz )
+		Band.StartBin = SpectrumRegistry.HzToRawBin( Band.MinHz )
+		Band.EndBin   = SpectrumRegistry.HzToRawBin( Band.MaxHz )
 	end
 end
 

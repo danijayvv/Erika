@@ -8,7 +8,7 @@ ErikaConstructors.__index = ErikaConstructors
 -- // Services & Requires
 local AnalyzerRegistry   = require('./Erika/Registries/AnalyzerRegistry')
 local BeatRegistry       = require('./Erika/Registries/BeatRegistry')
-local VisualizerRegistry = require('./Erika/Registries/VisualizerRegistry')
+local Visualizer2D = require('./Erika/Registries/Visualizer/Visualizer2D')
 
 local Signal = require('./Erika/Signal')
 
@@ -26,7 +26,7 @@ export type ErikaType = {
 	Set: ( ErikaType , SoundPropertiesType ) -> ErikaType,
 	Play: ( ErikaType , SoundPropertiesType | number ) -> ErikaType,
 	Stop: ( ErikaType , ResetTimePosition: boolean? ) -> ErikaType,
-	Create2D: ( ErikaType ) -> ErikaType,
+	Create2D: ( ErikaType , ParentContainer: GuiObject ) -> ErikaType,
 }
 
 type SoundPropertiesType = {
@@ -67,13 +67,18 @@ function ErikaConstructors:Stop( ResetTimePosition: boolean? ): ErikaType
 	return self
 end
 
-function ErikaConstructors:Create2D(): ErikaType
+function ErikaConstructors:Create2D( ParentContainer: GuiObject ): ErikaType
+	Visualizer2D.new( self.AnalyzerEntry.AudioAnalyzer , {
+		BarCount = 32,
+		BarGap = 0.002,
+		BarColorLow = Color3.fromRGB(40, 40, 200),
+		BarColorHigh = Color3.fromRGB(255, 60, 60),
+	} , ParentContainer )
 	return self
 end
 
 function Erika.new( Name: string?, AudioProperties: AnalyzerRegistry.AudioPropertiesType? ): ErikaType
 	local AnalyzerEntry = AnalyzerRegistry.new( AudioProperties or {} ):SetName( Name )
-	
 	return setmetatable( {
 		AudioPlayer = AnalyzerEntry.AudioPlayer,
 		AnalyzerEntry = AnalyzerEntry,
