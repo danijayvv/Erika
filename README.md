@@ -1,7 +1,6 @@
-# <img src="https://dxnvxv.studio/assets/images/image05.jpg?v=1ba4ae39" alt="🌼" width="25">  Erika 
-Music deserves to be seen. Erika makes audio visualization quick and simple.
+# <img src="https://dxnvxv.studio/assets/images/image05.jpg?v=1ba4ae39" alt="🌼" width="25">  Erika
+Turn sound into something you can see. <br> Erika makes audio visualization quick and simple.
 ### <img src="https://dxnvxv.studio/assets/images/image04.jpg?v=1ba4ae39" alt="A bed of flowers" width="500">
-Developed by me, Dani (danijayvv) @ [DXNVXV](https://dxnvxv.studio). Art by my lovely girlfriend, Anne.
 
 ## Philosophy
 Stop overcomplicating sounds, let's keep it simple:
@@ -26,11 +25,11 @@ end)
 - Built-in beat detection with `Tangela.OnBeat`, driven by Roblox's `AudioAnalyzer`
 - Fully optional configuration with sensible defaults for everything
 - Support for your own `AudioPlayer` & `AudioAnalyzer` instances
-- Lightweight API that's simple to understand
 
 ## Setup
 1. Insert the Erika library into any client-accessible service (e.g. `ReplicatedStorage`, `StarterPlayerScripts`)
-2. Require Erika: ```local Erika = require(<path to Erika>)```
+2. Require Erika:
+	- ```local Erika = require(<path to Erika>)```
 3. Read the API below to get started
 
 ## API
@@ -75,3 +74,9 @@ Tangela.OnBeat:Connect(function( Scale: number )
 end)
 ```
 Fires every frame with a `Scale` value between `0` and `1`, derived from the spectrum data given by the `AudioAnalyzer`.
+
+## Credits
+- **Erika** by [Dani (danijayvv)](https://github.com/danijayvv)
+- **Art** by my lovely girlfriend, Anne
+
+Support us @ [DXNVXV.COM](https://dxnvxv.studio)
