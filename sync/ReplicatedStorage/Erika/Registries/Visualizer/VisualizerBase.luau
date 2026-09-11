@@ -38,7 +38,7 @@ export type BinRange = { StartBin: number, EndBin: number }
 -- // Functions
 
 local HzToRawBin = SpectrumRegistry.HzToRawBin
-function VisualizerBase.new<T>( AudioAnalyzer: AudioAnalyzer , BarCount: number , BarDecay: number? , Addon: T ): VisualizerBaseType & T
+function VisualizerBase.new<T>( AudioAnalyzer: AudioAnalyzer , BarCount: number , Addon: T ): VisualizerBaseType & T
 	local BarBinRanges = table.create( BarCount ) :: { BinRange }
 	for Index = 1 , BarCount do
 		local T0 = ( Index - 1 ) / BarCount
@@ -51,7 +51,7 @@ function VisualizerBase.new<T>( AudioAnalyzer: AudioAnalyzer , BarCount: number 
 	local Base = {
 		AudioAnalyzer = AudioAnalyzer,
 		BarCount = BarCount,
-		BarDecay = BarDecay or 0.90,
+		BarDecay = ( Addon :: any ).BarDecay,
 		BarBinRanges = BarBinRanges,
 		BarPeaks = table.create( BarCount , 0 ),
 		Connection = nil,

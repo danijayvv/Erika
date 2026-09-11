@@ -6,11 +6,11 @@ local ErikaConstructors = {} :: ErikaType & { __index: ErikaType }
 ErikaConstructors.__index = ErikaConstructors
 
 -- // Services & Requires
-local AnalyzerRegistry   = require('./Erika/Registries/AnalyzerRegistry')
-local BeatRegistry       = require('./Erika/Registries/BeatRegistry')
-local Visualizer2D = require('./Erika/Registries/Visualizer/Visualizer2D')
+local AnalyzerRegistry   = require('@self/Registries/AnalyzerRegistry')
+local BeatRegistry       = require('@self/Registries/BeatRegistry')
+local Visualizer2D = require('@self/Registries/Visualizer/Visualizer2D')
 
-local Signal = require('./Erika/Signal')
+local Signal = require('@self/Signal')
 
 -- // Variables & Constants
 
@@ -20,13 +20,18 @@ export type ErikaClass = {
 }
 export type ErikaType = {
 	AudioPlayer: AudioPlayer,
+	Visualizers: { typeof( Visualizer2D.new( Instance.new('AudioAnalyzer') , {} , Instance.new('Frame') ) ) },
 	AnalyzerEntry: typeof( AnalyzerRegistry.new{} ),
 	OnBeat: Signal.Signal<number>,
 	
-	Set: ( ErikaType , SoundPropertiesType ) -> ErikaType,
-	Play: ( ErikaType , SoundPropertiesType | number ) -> ErikaType,
-	Stop: ( ErikaType , ResetTimePosition: boolean? ) -> ErikaType,
-	Create2D: ( ErikaType , ParentContainer: GuiObject ) -> ErikaType,
+	Set : ( ErikaType , SoundPropertiesType           ) -> ErikaType,
+	Play: ( ErikaType , SoundPropertiesType? | number ) -> ErikaType,
+	Stop: ( ErikaType , ResetTimePosition: boolean?   ) -> ErikaType,
+	
+	CreateVisualizer2D: ( ErikaType , ParentContainer: GuiObject , Info: Visualizer2D.Info2D? , AnchorPoint: Vector2? ) -> ErikaType,
+	ClearVisualizers  : ( ErikaType ) -> ErikaType,
+	
+	Destroy: ( ErikaType ) -> (),
 }
 
 type SoundPropertiesType = {
@@ -67,20 +72,34 @@ function ErikaConstructors:Stop( ResetTimePosition: boolean? ): ErikaType
 	return self
 end
 
-function ErikaConstructors:Create2D( ParentContainer: GuiObject ): ErikaType
-	Visualizer2D.new( self.AnalyzerEntry.AudioAnalyzer , {
-		BarCount = 32,
-		BarGap = 0.002,
-		BarColorLow = Color3.fromRGB(40, 40, 200),
-		BarColorHigh = Color3.fromRGB(255, 60, 60),
-	} , ParentContainer )
+-- ==============================================
+
+function ErikaConstructors:CreateVisualizer2D( ParentContainer: GuiObject , Info: Visualizer2D.Info2D? , AnchorPoint: Vector2? ): ErikaType
+	local Visualizer = Visualizer2D.new( self.AnalyzerEntry.AudioAnalyzer , Info or {} , ParentContainer , AnchorPoint )
+	table.insert( self.Visualizers , Visualizer )
 	return self
+end
+
+function ErikaConstructors:ClearVisualizers()
+	for __ , Visualizer in self.Visualizers do
+		Visualizer:Destroy()
+	end
+	return self
+end
+
+-- ==============================================
+
+function ErikaConstructors:Destroy()
+	self:ClearVisualizers()
+	BeatRegistry.Unbind( self.AnalyzerEntry.AudioAnalyzer )
+	self.AnalyzerEntry:Destroy()
 end
 
 function Erika.new( Name: string?, AudioProperties: AnalyzerRegistry.AudioPropertiesType? ): ErikaType
 	local AnalyzerEntry = AnalyzerRegistry.new( AudioProperties or {} ):SetName( Name )
 	return setmetatable( {
 		AudioPlayer = AnalyzerEntry.AudioPlayer,
+		Visualizers = {},
 		AnalyzerEntry = AnalyzerEntry,
 		OnBeat = BeatRegistry.Bind( AnalyzerEntry.AudioAnalyzer ),
 	} :: ErikaType , ErikaConstructors )

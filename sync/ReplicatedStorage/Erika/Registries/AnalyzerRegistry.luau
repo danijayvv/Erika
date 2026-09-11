@@ -19,11 +19,13 @@ export type AnalyzerRegistryType = {
 	AudioPlayer: AudioPlayer,
 	AudioAnalyzer: AudioAnalyzer,
 
-	SetSoundId: ( AnalyzerRegistryType , SoundId: number? ) -> AnalyzerRegistryType,
-	SetLooping: ( AnalyzerRegistryType , Looping: boolean? ) -> AnalyzerRegistryType,
+	SetSoundId      : ( AnalyzerRegistryType , SoundId: number?       ) -> AnalyzerRegistryType,
+	SetLooping      : ( AnalyzerRegistryType , Looping: boolean?      ) -> AnalyzerRegistryType,
 	SetPlaybackSpeed: ( AnalyzerRegistryType , PlaybackSpeed: number? ) -> AnalyzerRegistryType,
-	SetVolume: ( AnalyzerRegistryType , Volume: number? ) -> AnalyzerRegistryType,
-	SetName: ( AnalyzerRegistryType , Name   : string? ) -> AnalyzerRegistryType,
+	SetVolume       : ( AnalyzerRegistryType , Volume: number?        ) -> AnalyzerRegistryType,
+	SetName         : ( AnalyzerRegistryType , Name: string?          ) -> AnalyzerRegistryType,
+	
+	Destroy: ( AnalyzerRegistryType ) -> (),
 }
 
 export type AudioPropertiesType = {
@@ -77,6 +79,14 @@ function AnalyzerRegistry:SetName( Name: string? ): AnalyzerRegistryType
 	end
 	self.AudioPlayer.Name = Name
 	return self
+end
+
+-- ==============================================
+
+function AnalyzerRegistry:Destroy()
+	task.defer( self.AudioAnalyzer.Destroy , self.AudioAnalyzer )
+	task.defer( self.AudioPlayer.Destroy , self.AudioPlayer )
+	setmetatable( self , nil )
 end
 
 function AnalyzerRegistry.new( AudioProperties: AudioPropertiesType )
