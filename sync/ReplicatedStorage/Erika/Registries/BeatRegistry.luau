@@ -23,6 +23,8 @@ local FrequencyBands: { BandType } = {
 	{ Name = "High",    MinHz = 2000,  MaxHz = 8000,  DecayRate = 0.983 , StartBin = 0 , EndBin = 0 , Max = 0 },
 	{ Name = "Highest", MinHz = 8000,  MaxHz = 20000, DecayRate = 0.978 , StartBin = 0 , EndBin = 0 , Max = 0 },
 }
+
+export type PresetNameType = 'Default' | 'Punchy' | 'Subtle' | 'Smooth' | 'Gate_Lw' | 'Gate_Av' | 'Gate_Hi'
 local Presets: { [PresetNameType]: PresetType } = {
 	['Default'] = { InputMin = 0,   InputMax = 1,   OutputMin = 0,   OutputMax = 1    },
 	['Punchy']  = { InputMin = 0.3, InputMax = 0.8, OutputMin = 0.8, OutputMax = 1    },
@@ -40,7 +42,6 @@ export type BeatRegistryClass = {
 }
 
 type BandType = { Name: string , MinHz: number , MaxHz: number , DecayRate: number , StartBin: number , EndBin: number , Max: number }
-export type PresetNameType = 'Default' | 'Punchy' | 'Subtle' | 'Smooth' | 'Gate_Lw' | 'Gate_Av' | 'Gate_Hi'
 export type PresetType = {
 	InputMin: number,
 	InputMax: number,

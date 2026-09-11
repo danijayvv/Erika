@@ -28,7 +28,7 @@ export type ErikaType = {
 	Play: ( ErikaType , SoundPropertiesType? | number ) -> ErikaType,
 	Stop: ( ErikaType , ResetTimePosition: boolean?   ) -> ErikaType,
 	
-	CreateVisualizer2D: ( ErikaType , ParentContainer: GuiObject , Info: Visualizer2D.Info2D? , AnchorPoint: Vector2? ) -> ErikaType,
+	CreateVisualizer2D: ( ErikaType , ParentContainer: GuiObject , Info: Visualizer2D.Info2D? , ContainerAlignment: Visualizer2D.AlignmentType? , BarAlignment: Visualizer2D.AlignmentType? ) -> ErikaType,
 	ClearVisualizers  : ( ErikaType ) -> ErikaType,
 	
 	SetBeatPreset: ( ErikaType , PresetName: BeatRegistry.PresetNameType ) -> ErikaType,
@@ -75,8 +75,8 @@ end
 
 -- ==============================================
 
-function ErikaConstructors:CreateVisualizer2D( ParentContainer: GuiObject , Info: Visualizer2D.Info2D? , AnchorPoint: Vector2? ): ErikaType
-	local Visualizer = Visualizer2D.new( self.AnalyzerEntry.AudioAnalyzer , Info or {} , ParentContainer , AnchorPoint )
+function ErikaConstructors:CreateVisualizer2D( ParentContainer: GuiObject , Info: Visualizer2D.Info2D? , ContainerAlignment: Visualizer2D.AlignmentType , BarAlignment: Visualizer2D.AlignmentType ): ErikaType
+	local Visualizer = Visualizer2D.new( self.AnalyzerEntry.AudioAnalyzer , Info or {} , ParentContainer , ContainerAlignment , BarAlignment )
 	table.insert( self.Visualizers , Visualizer )
 	return self
 end
