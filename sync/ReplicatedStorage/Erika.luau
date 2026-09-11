@@ -31,6 +31,7 @@ export type ErikaType = {
 	CreateVisualizer2D: ( ErikaType , ParentContainer: GuiObject , Info: Visualizer2D.Info2D? , AnchorPoint: Vector2? ) -> ErikaType,
 	ClearVisualizers  : ( ErikaType ) -> ErikaType,
 	
+	SetBeatPreset: ( ErikaType , PresetName: BeatRegistry.PresetNameType ) -> ErikaType,
 	Destroy: ( ErikaType ) -> (),
 }
 
@@ -88,6 +89,11 @@ function ErikaConstructors:ClearVisualizers()
 end
 
 -- ==============================================
+
+function ErikaConstructors:SetBeatPreset( PresetName: BeatRegistry.PresetNameType ): ErikaType
+	BeatRegistry.SetPreset( self.AnalyzerEntry.AudioAnalyzer , PresetName )
+	return self
+end
 
 function ErikaConstructors:Destroy()
 	self:ClearVisualizers()
