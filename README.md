@@ -11,7 +11,7 @@ Better yet, let's add a visualizer too:
 ```
 -- Code soon to come.
 ```
-Or... let's have instances groove to the beat:
+And, let's have instances groove to the beat:
 ```
 Erika.new():Play( SOUND_ID_HERE ).OnBeat:Connect(function( Scale: number )
 	UIScale.Scale = 1 + Scale * 0.5
@@ -67,6 +67,12 @@ Tangela:Stop()
 ```
 Stops the sound.
 
+### `Tangela:CreateVisualizer2D`
+
+### `Tangela:CreateVisualizer3D`
+
+### `Tangela:ClearVisualizers`
+
 ### `Tangela.OnBeat`
 ```
 Tangela.OnBeat:Connect(function( Scale: number )
@@ -74,6 +80,10 @@ Tangela.OnBeat:Connect(function( Scale: number )
 end)
 ```
 Fires every frame with a `Scale` value between `0` and `1`, derived from the spectrum data given by the `AudioAnalyzer`.
+
+### `Tangela:SetBeatPreset`
+
+### `Tangela:Destroy`
 
 ## Credits
 - **Erika** by [Dani (danijayvv)](https://github.com/danijayvv)
