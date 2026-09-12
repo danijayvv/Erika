@@ -38,13 +38,15 @@ export type BinRange = { StartBin: number, EndBin: number }
 -- // Functions
 
 local HzToRawBin = SpectrumRegistry.HzToRawBin
-function VisualizerBase.new<T>( AudioAnalyzer: AudioAnalyzer , BarCount: number , Addon: T ): VisualizerBaseType & T
+function VisualizerBase.new<T>( AudioAnalyzer: AudioAnalyzer , BarCount: number , Addon: T , MinHz: number? , MaxHz: number? ): VisualizerBaseType & T
+	local RangeMinHz = MinHz or MIN_HZ
+	local RangeMaxHz = MaxHz or MAX_HZ
 	local BarBinRanges = table.create( BarCount ) :: { BinRange }
 	for Index = 1 , BarCount do
 		local T0 = ( Index - 1 ) / BarCount
 		local T1 = Index / BarCount
-		local StartHz = MIN_HZ * (MAX_HZ / MIN_HZ) ^ T0
-		local EndHz   = MIN_HZ * (MAX_HZ / MIN_HZ) ^ T1
+		local StartHz = RangeMinHz * ( RangeMaxHz / RangeMinHz ) ^ T0
+		local EndHz   = RangeMinHz * ( RangeMaxHz / RangeMinHz ) ^ T1
 		BarBinRanges[Index] = { StartBin = HzToRawBin( StartHz ), EndBin = HzToRawBin( EndHz ) }
 	end
 	

@@ -26,6 +26,8 @@ export type Info2D = {
 	BarMaxHeight: number?,
 	BarColorLow: Color3?,
 	BarColorHigh: Color3?,
+	MinHz: number?,
+	MaxHz: number?,
 }
 
 export type AlignmentType = 'Top' | 'Bottom' | 'Center'
@@ -78,7 +80,7 @@ function Visualizer2D.new( AudioAnalyzer: AudioAnalyzer , Info: Info2D , ParentC
 		BarMaxHeight = MergedInfo.BarMaxHeight,
 		BarColorLow = MergedInfo.BarColorLow,
 		BarColorHigh = MergedInfo.BarColorHigh,
-	} )
+	} , MergedInfo.MinHz , MergedInfo.MaxHz )
 	setmetatable( self :: any , Visualizer2D )
 	return self
 end
