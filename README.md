@@ -52,6 +52,9 @@ Tangela:Set{
 
 `Erika.new` accepts optional constructor parameters that must be provided when creating the object. These parameters cannot be added after creation. `Tangela:Set` handles properties that can be configured or changed after the object has been created.
 
+### `Tangela:Destroy`
+Stops beat detection, destroys every visualizer, and destroys the ```AudioAnalyzer``` and ```AudioPlayer``` instances.
+
 ### `Tangela:Play`
 ```
 Tangela:Play{ SoundId = SOUND_ID_HERE , Looping = boolean , PlaybackSpeed = number }
@@ -63,15 +66,42 @@ Plays the sound, overriding `SoundId`, `Looping`, or `PlaybackSpeed` if provided
 
 ### `Tangela:Stop`
 ```
-Tangela:Stop()
+Tangela:Stop( boolean? )
 ```
-Stops the sound.
+Stops the sound. If the passed ```boolean``` is true, the sound will have its ```TimePosition``` reset to 0.
+
+### `Tangela.Visualizers`
+Holds every visualizer created via `Tangela:CreateVisualizer2D` or `Tangela:CreateVisualizer3D`.
 
 ### `Tangela:CreateVisualizer2D`
+```
+Tangela:CreateVisualizer2D( GuiObject , {
+	BarCount = number,
+	BarGap = number,
+	BarDecay = number,
+	BarMaxHeight = number,
+	BarColorLow = Color3,
+	BarColorHigh = Color3,
+	MinHz = number,
+	MaxHz = number,
+} , ContainerAlignment , BarAlignment )
+```
+Creates a 2D bar visualizer parented to a ```GuiObject```. All fields in the ```table``` are optional and fall back to sensible defaults. <br>
+`ContainerAlignment` and `BarAlignment` each accept `Top`, `Bottom`, or `Center`.
+
+- `BarCount`: The number of bar frames created
+- `BarGap`: The distance between every bar frame
+- `BarDecay`: How long a bar frame holds its position before falling
+- `BarMaxHeight`: The max scale a bar frame can reach
+- `BarColorLow`: The color a bar frame is at its lowest
+- `BarColorHigh`: The color a bar frame is at its highest
+- `MinHz`: Locks the minimum accepted Hz
+- `MaxHz`: Locks the maximum accepted Hz
 
 ### `Tangela:CreateVisualizer3D`
 
 ### `Tangela:ClearVisualizers`
+Destroys every visualizer created via `Tangela:CreateVisualizer2D` or `Tangela:CreateVisualizer3D` and empties `Erika.Visualizers`.
 
 ### `Tangela.OnBeat`
 ```
@@ -82,8 +112,13 @@ end)
 Fires every frame with a `Scale` value between `0` and `1`, derived from the spectrum data given by the `AudioAnalyzer`.
 
 ### `Tangela:SetBeatPreset`
-
-### `Tangela:Destroy`
+Remaps the range of values fired by ```Tangela.OnBeat```. Built-in presets are:
+- `Punchy`: input `0.3`–`0.8` → output `0.8`–`1` (only strong hits register, and they hit hard)
+- `Subtle`: input `0.2`–`0.9` → output `0.7`–`0.85` (a gentle pulse that never fully rests)
+- `Smooth`: input `0`–`1` → output `0.1`–`0.6` (flattens peaks for continuous, non-jarring motion)
+- `Gate_Lw`: binary on/off, switches to `1` once the beat crosses `50%` intensity
+- `Gate_Av`: binary on/off, switches to `1` once the beat crosses `70%` intensity
+- `Gate_Hi`: binary on/off, switches to `1` once the beat crosses `90%` intensity
 
 ## Credits
 - **Erika** by [Dani (danijayvv)](https://github.com/danijayvv)
