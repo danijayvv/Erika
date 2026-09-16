@@ -1,8 +1,7 @@
-# <img src="https://dxnvxv.studio/assets/images/image05.jpg?v=1ba4ae39" alt="🌼" width="25">  Erika
-Turn sound into something you can see. <br> Erika makes audio visualization quick and simple. <br> <br>
-<img src="https://dxnvxv.studio/assets/images/image04.jpg?v=1ba4ae39" alt="A bed of flowers" width="500">
+<div align="center"> <img src="https://dxnvxv.studio/assets/images/image08.svg?v=53b855b6" alt="Turn sound into something you can see. Erika makes audio visualization quick and simple."> </div>
+<img src="https://dxnvxv.studio/assets/images/image04.jpg?v=b5739462" alt="A bed of flowers" width="100%" height="300px">
 
-## Philosophy
+## <img src="https://dxnvxv.studio/assets/images/image05.jpg?v=1ba4ae39" alt="🌼" width="20"> Philosophy
 Stop overcomplicating sounds, let's keep it simple:
 ```
 Erika.new():Play( SOUND_ID_HERE )
@@ -20,19 +19,19 @@ end)
 > [!TIP]
 > Methods are chainable, you can have it all!
 
-## Features
+## <img src="https://dxnvxv.studio/assets/images/image05.jpg?v=1ba4ae39" alt="🌼" width="20"> Features
 - One-line setup from `SoundId` to a playing, analyzable sound
 - Built-in beat detection with `Tangela.OnBeat`, driven by Roblox's `AudioAnalyzer`
 - Fully optional configuration with sensible defaults for everything
 - Support for your own `AudioPlayer` & `AudioAnalyzer` instances
 
-## Setup
+## <img src="https://dxnvxv.studio/assets/images/image05.jpg?v=1ba4ae39" alt="🌼" width="20"> Setup
 1. Insert the Erika library into any client-accessible service (e.g. `ReplicatedStorage`, `StarterPlayerScripts`)
 2. Require Erika:
 	- ```local Erika = require(<path to Erika>)```
 3. Read the API below to get started
 
-## API
+## <img src="https://dxnvxv.studio/assets/images/image05.jpg?v=1ba4ae39" alt="🌼" width="20"> API
 ### `Erika.new` & `Tangela:Set`
 ```
 local Tangela = Erika.new( string , {
@@ -141,8 +140,10 @@ Remaps the range of values fired by ```Tangela.OnBeat```. Built-in presets are:
 - `Gate_Av`: binary on/off, switches to `1` once the beat crosses `70%` intensity
 - `Gate_Hi`: binary on/off, switches to `1` once the beat crosses `90%` intensity
 
-## Credits
+## <img src="https://dxnvxv.studio/assets/images/image05.jpg?v=1ba4ae39" alt="🌼" width="20"> Credits
 - **Erika** by [Dani (danijayvv)](https://github.com/danijayvv)
 - **Art** by my lovely girlfriend, Anne
+- **Title Banner** created with [capsule-render](https://github.com/kyechan99/capsule-render)
+- Utilized **[Azul](https://github.com/Ransomwave/azul)**
 
 Support us @ [DXNVXV.COM](https://dxnvxv.studio)
