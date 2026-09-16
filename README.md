@@ -1,4 +1,10 @@
-<div align="center"> <img src="https://dxnvxv.studio/assets/images/image08.svg?v=53b855b6" alt="Turn sound into something you can see. Erika makes audio visualization quick and simple."> </div>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://dxnvxv.studio/assets/images/image09.svg?v=050a9a84">
+    <source media="(prefers-color-scheme: light)" srcset="https://dxnvxv.studio/assets/images/image08.svg?v=050a9a84">
+    <img alt="Turn sound into something you can see. Erika makes audio visualization quick and simple." src="https://dxnvxv.studio/assets/images/image08.svg?v=050a9a84">
+  </picture>
+</p>
 <img src="https://dxnvxv.studio/assets/images/image04.jpg?v=b5739462" alt="A bed of flowers" width="100%" height="300px">
 
 ## <img src="https://dxnvxv.studio/assets/images/image05.jpg?v=1ba4ae39" alt="🌼" width="20"> Philosophy
