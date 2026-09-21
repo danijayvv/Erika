@@ -37,6 +37,13 @@ export type BinRange = { StartBin: number, EndBin: number }
 
 -- // Functions
 
+local function GetRangeAverage(PrefixValues: { number }, StartBin: number, EndBin: number): number
+	local StartSum = StartBin > 1 and PrefixValues[StartBin - 1] or 0
+	local Sum = PrefixValues[EndBin] - StartSum
+	local Count = EndBin - StartBin + 1
+	return Count > 0 and (Sum / Count) or 0
+end
+
 local HzToRawBin = SpectrumRegistry.HzToRawBin
 function VisualizerBase.new<T>( AudioAnalyzer: AudioAnalyzer , BarCount: number , Addon: T , MinHz: number? , MaxHz: number? ): VisualizerBaseType & T
 	local RangeMinHz = MinHz or MIN_HZ
@@ -47,7 +54,7 @@ function VisualizerBase.new<T>( AudioAnalyzer: AudioAnalyzer , BarCount: number 
 		local T1 = Index / BarCount
 		local StartHz = RangeMinHz * ( RangeMaxHz / RangeMinHz ) ^ T0
 		local EndHz   = RangeMinHz * ( RangeMaxHz / RangeMinHz ) ^ T1
-		BarBinRanges[Index] = { StartBin = HzToRawBin( StartHz ), EndBin = HzToRawBin( EndHz ) }
+		BarBinRanges[Index] = { StartBin = HzToRawBin( StartHz ) , EndBin = HzToRawBin( EndHz ) }
 	end
 	
 	local Base = {
@@ -58,20 +65,17 @@ function VisualizerBase.new<T>( AudioAnalyzer: AudioAnalyzer , BarCount: number 
 		BarPeaks = table.create( BarCount , 0 ),
 		Connection = nil,
 	}
-	for Key , Value in ( Addon :: { any } ) do
+	for Key , Value in ( Addon :: { [string]: any } ) do
 		Base[Key] = Value
 	end
 
 	local self = setmetatable( Base :: VisualizerBaseType , VisualizerBase )
-	self.Connection = SpectrumRegistry.Bind( AudioAnalyzer ):Connect(function( RawValues: { number } , AGCMax: number )
-		for Index = 1, self.BarCount do
+	self.Connection = SpectrumRegistry.Bind( AudioAnalyzer ):Connect(function( Frame )
+		for Index = 1 , self.BarCount do
 			local Range = self.BarBinRanges[Index]
-			local Sum , Count = 0, 0
-			for Bin = Range.StartBin, Range.EndBin do
-				Sum += RawValues[Bin] or 0
-				Count += 1
-			end
-			local Value = clamp( ( Count > 0 and Sum / Count or 0 ) / AGCMax , 0 , 1 )
+			
+			local Average = GetRangeAverage( Frame.PrefixValues , Range.StartBin , Range.EndBin )
+			local Value = clamp( ( Average / Frame.AGCMax ) , 0 , 1 )
 			self.BarPeaks[Index] *= self.BarDecay
 			if Value > self.BarPeaks[Index] then
 				self.BarPeaks[Index] = Value

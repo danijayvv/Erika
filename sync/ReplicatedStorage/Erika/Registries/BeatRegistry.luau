@@ -12,10 +12,9 @@ local Signal = require('../Signal')
 const clamp = math.clamp
 const max   = math.max
 const min   = math.min
-const round = math.round
 
 -- // Tables & Types
-local Bindings: { [AudioAnalyzer]: InfoType } = {}
+local Bindings: { [AudioAnalyzer]: BeatBindingType } = {}
 local FrequencyBands: { BandType } = {
 	{ Name = "Bass",    MinHz = 20,    MaxHz = 250,   DecayRate = 0.993 , StartBin = 0 , EndBin = 0 , Max = 0 },
 	{ Name = "Beat",    MinHz = 250,   MaxHz = 500,   DecayRate = 0.990 , StartBin = 0 , EndBin = 0 , Max = 0 },
@@ -49,9 +48,16 @@ export type PresetType = {
 	OutputMax: number,
 	Threshold: number?,
 }
-type InfoType = {
+type BeatSubscriberType = {
 	Signal: Signal.Signal<number>,
-	Connection: Signal.Connection?,
+	Preset: PresetType,
+}
+type BeatBindingType = {
+	Bands: { BandType },
+	Connection: Signal.Connection,
+	Subscribers: { BeatSubscriberType },
+}
+type InfoType = {
 	Bands: { BandType },
 	Preset: PresetType,
 }
@@ -60,11 +66,11 @@ type InfoType = {
 
 local function CalculateBand( RawValues: { number } , Band: BandType ): number
 	local Sum, Count = 0, 0
-	for Index = Band.StartBin, Band.EndBin do
+	for Index = Band.StartBin , Band.EndBin do
 		Sum += RawValues[Index] or 0
 		Count += 1
 	end
-	local Value = Count > 0 and Sum / Count or 0
+	local Value = Count > 0 and ( Sum / Count ) or 0
 	Band.Max = max( Value , Band.Max * Band.DecayRate )
 	if Band.Max <= 0 then
 		return 0
@@ -86,19 +92,38 @@ end
 
 function BeatRegistry.Bind( AudioAnalyzer: AudioAnalyzer , PresetName: PresetNameType? )
 	local OnBeat = Signal.new()
+	local Existing = Bindings[AudioAnalyzer]
+	if Existing then
+		table.insert( Existing.Subscribers , {
+			Signal = OnBeat,
+			Preset = Presets[ PresetName or 'Default' :: PresetNameType ]
+		} )
+		return OnBeat
+	end
+	
 	local Bands = table.clone( FrequencyBands )
 	for Index , Band in Bands do
 		Bands[Index] = table.clone( Band )
 	end
-	
-	Bindings[AudioAnalyzer] = { Signal = OnBeat, Bands = Bands , Preset = PresetName and Presets[ PresetName :: PresetNameType ] or Presets.Default }
-	Bindings[AudioAnalyzer].Connection = SpectrumRegistry.Bind( AudioAnalyzer ):Connect(function( RawValues: { number } )
+	local Info: BeatBindingType = {
+		Bands = Bands,
+		Connection = nil :: any,
+		Subscribers = { {
+			Signal = OnBeat,
+			Preset = Presets[ PresetName or 'Default' :: PresetNameType ],
+		} }
+	}
+	Bindings[AudioAnalyzer] = Info
+	Info.Connection = SpectrumRegistry.Bind( AudioAnalyzer ):Connect(function( Frame )
 		local Total = 0
 		for __ , Band in Bands do
-			Total += CalculateBand( RawValues , Band )
+			Total += CalculateBand( Frame.Values , Band )
 		end
 		local Average = clamp( Total / #Bands , 0 , 1 )
-		OnBeat:Fire( Remap( Average , Bindings[AudioAnalyzer].Preset ) )
+		for __ , Subscriber in Info.Subscribers do
+			local Value = Remap( Average , Subscriber.Preset )
+			Subscriber.Signal:Fire( Value )
+		end
 	end)
 	return OnBeat
 end
@@ -125,7 +150,9 @@ function BeatRegistry.SetPreset( AudioAnalyzer: AudioAnalyzer , PresetName: Pres
 	if not Preset then
 		return
 	end
-	Info.Preset = Preset
+	for __ , Subscriber in Info.Subscribers do
+		Subscriber.Preset = Preset
+	end
 end
 
 do

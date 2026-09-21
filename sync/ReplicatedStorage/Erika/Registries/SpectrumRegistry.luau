@@ -22,10 +22,24 @@ const min = math.min
 local round = math.round
 
 -- // Tables & Types
-local Bindings: { [AudioAnalyzer]: { Signal: SignalType , AGCMax: number , RefCount: number } } = {}
+local Bindings: { [AudioAnalyzer]: BindingInfoType } = {}
 local RawBinRanges = {}
 
-type SignalType = Signal.Signal<{ number }, number>
+type BindingInfoType = {
+	Signal: SignalType,
+	AGCMax: number,
+	RawValues: { number },
+	PrefixValues: { number },
+	RefCount: number,
+}
+
+type SpectrumFrameType = {
+	AGCMax: number,
+	Values: { number },
+	PrefixValues: { number },
+}
+
+type SignalType = Signal.Signal<SpectrumFrameType>
 
 -- // Functions
 
@@ -42,7 +56,13 @@ function SpectrumRegistry.Bind( AudioAnalyzer: AudioAnalyzer ): SignalType
 	end
 
 	local Changed = Signal.new()
-	Bindings[AudioAnalyzer] = { Signal = Changed , AGCMax = 0.001 , RefCount = 1 }
+	Bindings[AudioAnalyzer] = {
+		Signal = Changed,
+		AGCMax = 0.001,
+		RawValues = table.create( RAW_BIN_COUNT , 0 ),
+		PrefixValues = table.create( RAW_BIN_COUNT , 0 ),
+		RefCount = 1,
+	}
 	return Changed
 end
 
@@ -72,9 +92,11 @@ do
 	RunService.RenderStepped:Connect(function()
 		for AudioAnalyzer, Info in Bindings do
 			local Spectrum = AudioAnalyzer:GetSpectrum()
-
-			local RawValues = table.create( RAW_BIN_COUNT ) :: { number }
-			local Peak = 0
+			
+			local RawValues = Info.RawValues
+			local PrefixValues = Info.PrefixValues
+			local Peak , RunningTotal = 0 , 0
+			
 			for Index = 1 , RAW_BIN_COUNT do
 				local Range = RawBinRanges[Index]
 				local Sum , Count = 0 , 0
@@ -84,6 +106,10 @@ do
 				end
 				local Value = Count > 0 and Sum / Count or 0
 				RawValues[Index] = Value
+				
+				RunningTotal += Value
+				PrefixValues[Index] = RunningTotal
+				
 				if Value > Peak then
 					Peak = Value
 				end
@@ -93,7 +119,11 @@ do
 			if Peak > Info.AGCMax then
 				Info.AGCMax = Peak
 			end
-			Info.Signal:Fire( RawValues , Info.AGCMax )
+			Info.Signal:Fire{
+				Values = RawValues,
+				PrefixValues = PrefixValues,
+				AGCMax = Info.AGCMax,
+			}
 		end
 	end)
 end
