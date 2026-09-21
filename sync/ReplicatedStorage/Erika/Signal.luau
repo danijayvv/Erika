@@ -77,11 +77,20 @@ function Signal:Fire<T...>(...: T...)
 	if selfImpl._destroyed then
 		return
 	end
-	for _, listener in ipairs(selfImpl._listeners) do
+	for __ , listener in selfImpl._listeners do
 		if listener.connected then
-			task.defer(listener.callback, ...)
+			task.spawn( listener.callback , ... )
 		end
 	end
+	--local listeners = selfImpl._listeners
+	--for Index = #listeners , 1 , -1 do
+	--	local listener = listeners[Index]
+	--	if listener.connected then
+	--		listener.callback( ... )
+	--	else
+	--		table.remove( listeners , Index )
+	--	end
+	--end
 end
 
 function Signal:Destroy()
