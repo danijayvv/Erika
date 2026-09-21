@@ -19,12 +19,15 @@ export type AnalyzerRegistryType = {
 	AudioPlayer: AudioPlayer,
 	AudioAnalyzer: AudioAnalyzer,
 
+	OwnsAudioPlayer: boolean,
+	OwnsAudioAnalyzer: boolean,
+
 	SetSoundId      : ( AnalyzerRegistryType , SoundId: number?       ) -> AnalyzerRegistryType,
 	SetLooping      : ( AnalyzerRegistryType , Looping: boolean?      ) -> AnalyzerRegistryType,
 	SetPlaybackSpeed: ( AnalyzerRegistryType , PlaybackSpeed: number? ) -> AnalyzerRegistryType,
 	SetVolume       : ( AnalyzerRegistryType , Volume: number?        ) -> AnalyzerRegistryType,
 	SetName         : ( AnalyzerRegistryType , Name: string?          ) -> AnalyzerRegistryType,
-	
+
 	Destroy: ( AnalyzerRegistryType ) -> (),
 }
 
@@ -84,14 +87,19 @@ end
 -- ==============================================
 
 function AnalyzerRegistry:Destroy()
-	task.defer( self.AudioAnalyzer.Destroy , self.AudioAnalyzer )
-	task.defer( self.AudioPlayer.Destroy , self.AudioPlayer )
+	if not self.OwnsAudioAnalyzer and self.AudioAnalyzer.Parent then
+		task.defer( self.AudioAnalyzer.Destroy , self.AudioAnalyzer )
+	end
+	if not self.OwnsAudioPlayer and self.AudioPlayer.Parent then
+		task.defer( self.AudioPlayer.Destroy , self.AudioPlayer )
+	end
 	setmetatable( self , nil )
 end
 
 function AnalyzerRegistry.new( AudioProperties: AudioPropertiesType )
 	local AudioPlayer = AudioProperties.AudioPlayer
-	if not AudioPlayer then
+	local OwnsAudioPlayer = typeof( AudioPlayer ) == 'AudioPlayer'
+	if not OwnsAudioPlayer then
 		AudioPlayer = Instance.new('AudioPlayer')
 		AudioPlayer.Parent = SoundService
 
@@ -102,8 +110,9 @@ function AnalyzerRegistry.new( AudioProperties: AudioPropertiesType )
 		OutputWire.TargetInstance = AudioDeviceOutput
 		OutputWire.Parent = AudioPlayer
 	end
-	
+
 	local AudioAnalyzer = AudioProperties.AudioAnalyzer
+	local OwnsAudioAnalyzer = typeof( AudioAnalyzer ) == 'AudioAnalyzer'
 	if not AudioAnalyzer then
 		AudioAnalyzer = Instance.new('AudioAnalyzer')
 		AudioAnalyzer.WindowSize = AudioProperties.WindowSize or Enum.AudioWindowSize.Large
@@ -117,6 +126,9 @@ function AnalyzerRegistry.new( AudioProperties: AudioPropertiesType )
 	return setmetatable( {
 		AudioPlayer = AudioPlayer,
 		AudioAnalyzer = AudioAnalyzer,
+
+		OwnsAudioPlayer = OwnsAudioPlayer,
+		OwnsAudioAnalyzer = OwnsAudioAnalyzer,
 	} :: AnalyzerRegistryType , AnalyzerRegistry )
 end
 
