@@ -15,6 +15,8 @@ local Signal = require('./Erika/Signal')
 -- // Variables & Constants
 
 -- // Tables & Types
+local BeatSubscriptions: { [ErikaType]: BeatRegistry.SubscriptionType } = setmetatable( {} , { __mode = "k" } )
+
 export type ErikaClass = {
 	new: ( Name: string? , AudioProperties: AnalyzerRegistry.AudioPropertiesType? ) -> ErikaType,
 }
@@ -23,7 +25,6 @@ export type ErikaType = {
 	Visualizers: { typeof( Visualizer2D.new( Instance.new('AudioAnalyzer') , {} , Instance.new('Frame') ) ) },
 	AnalyzerEntry: typeof( AnalyzerRegistry.new{} ),
 	OnBeat: Signal.Signal<number>,
-	BeatSubscription: BeatRegistry.SubscriptionType,
 
 	_destroyed: boolean,
 	Set : ( ErikaType , SoundPropertiesType           ) -> ErikaType,
@@ -100,7 +101,10 @@ end
 -- ==============================================
 
 function ErikaConstructors:SetBeatPreset( PresetName: BeatRegistry.PresetNameType ): ErikaType
-	BeatRegistry.SetPreset( self.BeatSubscription , PresetName )
+	local BeatSubscription = BeatSubscriptions[self]
+	if BeatSubscription then
+		BeatRegistry.SetPreset( BeatSubscription , PresetName )
+	end
 	return self
 end
 
@@ -110,7 +114,11 @@ function ErikaConstructors:Destroy()
 	end
 	self._destroyed = true
 	self:ClearVisualizers()
-	self.BeatSubscription:Disconnect()
+	local BeatSubscription = BeatSubscriptions[self]
+	if BeatSubscription then
+		BeatSubscription:Disconnect()
+		BeatSubscriptions[self] = nil
+	end
 	self.AnalyzerEntry:Destroy()
 end
 
@@ -120,15 +128,16 @@ function Erika.new( Name: string?, AudioProperties: AnalyzerRegistry.AudioProper
 		AnalyzerEntry:SetName( Name )
 	end
 	local BeatSubscription = BeatRegistry.Bind( AnalyzerEntry.AudioAnalyzer )
-	return setmetatable( {
+	local self = setmetatable( {
 		AudioPlayer = AnalyzerEntry.AudioPlayer,
 		Visualizers = {},
 		AnalyzerEntry = AnalyzerEntry,
 		OnBeat = BeatSubscription.Signal,
-		BeatSubscription = BeatSubscription,
 
 		_destroyed = false,
 	} :: ErikaType , ErikaConstructors )
+	BeatSubscriptions[self] = BeatSubscription
+	return self
 end
 
 return table.freeze( Erika )
