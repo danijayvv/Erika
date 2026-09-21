@@ -94,7 +94,8 @@ function VisualizerBase:Destroy()
 	end
 	( self :: VisualizerBaseType )._destroyed = true
 	if self.Connection then
-		self.Connection:Disconnect()
+		self.Connection:Disconnect();
+		( self :: VisualizerBaseType ).Connection = nil
 	end
 	SpectrumRegistry.Unbind( self.AudioAnalyzer )
 end

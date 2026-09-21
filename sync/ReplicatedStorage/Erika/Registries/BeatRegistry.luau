@@ -60,12 +60,8 @@ type SubscriberType = {
 }
 type BindType = {
 	Bands: { BandType },
-	Connection: Signal.Connection,
+	Connection: Signal.Connection?,
 	Subscribers: { SubscriberType },
-}
-type InfoType = {
-	Bands: { BandType },
-	Preset: PresetType,
 }
 
 -- // Functions
@@ -112,6 +108,7 @@ local function DestroyBinding( AudioAnalyzer: AudioAnalyzer , Info: BindType )
 	end
 	if Info.Connection then
 		Info.Connection:Disconnect()
+		Info.Connection = nil
 	end
 	for __ , Subscriber in Info.Subscribers do
 		Subscriber.Connected = false
@@ -136,7 +133,7 @@ function BeatRegistry.Bind( AudioAnalyzer: AudioAnalyzer , PresetName: PresetNam
 		end
 		local NInfo = {
 			Bands = Bands,
-			Connection = nil :: any,
+			Connection = nil,
 			Subscribers = {},
 		} :: BindType
 		Bindings[AudioAnalyzer] = NInfo

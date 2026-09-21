@@ -87,11 +87,11 @@ end
 -- ==============================================
 
 function AnalyzerRegistry:Destroy()
-	if self.OwnsAudioAnalyzer and self.AudioAnalyzer.Parent then
-		task.defer( self.AudioAnalyzer.Destroy , self.AudioAnalyzer )
+	if self.OwnsAudioAnalyzer then
+		self.AudioAnalyzer:Destroy()
 	end
-	if self.OwnsAudioPlayer and self.AudioPlayer.Parent then
-		task.defer( self.AudioPlayer.Destroy , self.AudioPlayer )
+	if self.OwnsAudioPlayer then
+		self.AudioPlayer:Destroy()
 	end
 	setmetatable( self , nil )
 end

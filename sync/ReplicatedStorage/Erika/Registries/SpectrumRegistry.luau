@@ -73,6 +73,7 @@ function SpectrumRegistry.Unbind( AudioAnalyzer: AudioAnalyzer )
 	end
 	Info.RefCount -= 1
 	if Info.RefCount <= 0 then
+		Info.Signal:Destroy()
 		Bindings[AudioAnalyzer] = nil
 	end
 end
