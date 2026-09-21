@@ -13,12 +13,7 @@ const RAW_BIN_COUNT = SpectrumRegistry.RAW_BIN_COUNT
 const MIN_HZ = SpectrumRegistry.MIN_HZ
 const MAX_HZ = SpectrumRegistry.MAX_HZ
 
-const floor = math.floor
-const round = math.round
 const clamp = math.clamp
-const max   = math.max
-const min   = math.min
-const log   = math.log
 
 -- // Tables & Types
 export type VisualizerBaseType = {
@@ -28,7 +23,8 @@ export type VisualizerBaseType = {
 	BarBinRanges: { BinRange },
 	BarPeaks: { number },
 	Connection: Signal.Connection?,
-
+	
+	_destroyed: boolean,
 	RenderBar: ( self: VisualizerBaseType , Index: number , Value: number ) -> (),
 	Destroy: ( self: VisualizerBaseType ) -> (),
 }
@@ -64,6 +60,8 @@ function VisualizerBase.new<T>( AudioAnalyzer: AudioAnalyzer , BarCount: number 
 		BarBinRanges = BarBinRanges,
 		BarPeaks = table.create( BarCount , 0 ),
 		Connection = nil,
+		
+		_destroyed = false,
 	}
 	for Key , Value in ( Addon :: { [string]: any } ) do
 		Base[Key] = Value
@@ -91,6 +89,10 @@ function VisualizerBase:RenderBar( Index: number , Value: number )
 end
 
 function VisualizerBase:Destroy()
+	if self._destroyed then
+		return
+	end
+	( self :: VisualizerBaseType )._destroyed = true
 	if self.Connection then
 		self.Connection:Disconnect()
 	end

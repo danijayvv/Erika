@@ -26,7 +26,7 @@ local Bindings: { [AudioAnalyzer]: BindingInfoType } = {}
 local RawBinRanges = {}
 
 type BindingInfoType = {
-	Signal: SignalType,
+	Signal: SpectrumSignalType,
 	AGCMax: number,
 	RawValues: { number },
 	PrefixValues: { number },
@@ -39,7 +39,7 @@ type SpectrumFrameType = {
 	PrefixValues: { number },
 }
 
-type SignalType = Signal.Signal<SpectrumFrameType>
+export type SpectrumSignalType = Signal.Signal<SpectrumFrameType>
 
 -- // Functions
 
@@ -48,7 +48,7 @@ function SpectrumRegistry.HzToRawBin( Hz: number ): number
 	return max( 1 , min( RAW_BIN_COUNT , round( T * RAW_BIN_COUNT ) ) )
 end
 
-function SpectrumRegistry.Bind( AudioAnalyzer: AudioAnalyzer ): SignalType
+function SpectrumRegistry.Bind( AudioAnalyzer: AudioAnalyzer ): SpectrumSignalType
 	local Existing = Bindings[AudioAnalyzer]
 	if Existing then
 		Existing.RefCount += 1
