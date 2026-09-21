@@ -122,7 +122,7 @@ end
 function BeatRegistry.Bind( AudioAnalyzer: AudioAnalyzer , PresetName: PresetNameType? ): SubscriptionType
 	local Subscriber: SubscriberType = {
 		Signal = Signal.new(),
-		Preset = Presets[ PresetName or 'Default' :: PresetNameType ],
+		Preset = Presets[ PresetName or 'Default' :: PresetNameType ] or Presets.Default,
 		Connected = true,
 	}
 	local Info: BindType = Bindings[AudioAnalyzer]

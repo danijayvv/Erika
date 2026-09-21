@@ -97,6 +97,13 @@ function AnalyzerRegistry:Destroy()
 end
 
 function AnalyzerRegistry.new( AudioProperties: AudioPropertiesType )
+	if AudioProperties.AudioAnalyzer and not AudioProperties.AudioPlayer then
+		error( string.format('%s %s' ,
+			"Providing AudioAnalyzer without AudioPlayer is unsupported.",
+			"Provide both instances together."
+		) ) 
+	end
+	
 	local AudioPlayer = AudioProperties.AudioPlayer
 	local OwnsAudioPlayer = false
 	if not AudioPlayer then
