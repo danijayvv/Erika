@@ -14,7 +14,10 @@ Erika.new():Play( SOUND_ID_HERE )
 ```
 Better yet, let's add a visualizer too:
 ```
--- Code soon to come.
+Erika.new():Play( SOUND_ID_HERE ):CreateVisualizer2D( GuiObject , {
+	BarCount = 128,
+	BarGap = 0,
+} )
 ```
 And, let's have instances groove to the beat:
 ```
@@ -50,6 +53,7 @@ Tangela:Set{
 	SoundId = SOUND_ID_HERE,
 	Looping = boolean,
 	PlaybackSpeed = number,
+	Volume = number,
 }
 ```
 > [!NOTE]
@@ -57,17 +61,20 @@ Tangela:Set{
 
 `Erika.new` accepts optional constructor parameters that must be provided when creating the object. These parameters cannot be added after creation. `Tangela:Set` handles properties that can be configured or changed after the object has been created.
 
+>[!WARNING]
+> If you provide custom audio instances, provide **both** `AudioPlayer` and `AudioAnalyzer` together. Erika does not destroy user-provided instances.
+
 ### `Tangela:Destroy`
 ```
 Tangela:Destroy()
 ```
-Stops beat detection, destroys every visualizer, and destroys the ```AudioAnalyzer``` and ```AudioPlayer``` instances.
+Stops beat detection, destroys every visualizer, disconnects subscriptions, and destroys only the `AudioPlayer` and `AudioAnalyzer` instances created internally. User-provided audio instances remain owned by the caller.
 
 <hr>
 
 ### `Tangela:Play`
 ```
-Tangela:Play{ SoundId = SOUND_ID_HERE , Looping = boolean , PlaybackSpeed = number }
+Tangela:Play{ SoundId = SOUND_ID_HERE , Looping = boolean , PlaybackSpeed = number , Volume = number }
 Tangela:Play( SOUND_ID_HERE )
 ```
 Plays the sound, overriding `SoundId`, `Looping`, or `PlaybackSpeed` if provided.
@@ -116,6 +123,8 @@ Creates a 2D bar visualizer parented to a ```GuiObject```. All fields in the ```
 - `MaxHz`: Locks the maximum accepted Hz
 
 ### `Tangela:CreateVisualizer3D`
+> [!NOTE]
+> 3D visualizers are planned but are not currently implemented.
 
 ### `Tangela:ClearVisualizers`
 ```
@@ -133,12 +142,15 @@ end)
 ```
 Fires every frame with a `Scale` value between `0` and `1`, derived from the spectrum data given by the `AudioAnalyzer`.
 
+> [!NOTE]
+> Multiple `Tangela`'s may share the same `AudioPlayer` and `AudioAnalyzer`. Spectrum processing is shared internally, while each `Tangela` maintains its own beat subscription and beat preset.
+
 ### `Tangela:SetBeatPreset`
 ```
 Tangela:SetBeatPreset( 'Default' )
 ```
-Remaps the range of values fired by ```Tangela.OnBeat```. Built-in presets are:
-- `Default`: input `0.1`-`1.0` → output `0.0`-`1.0`
+Remaps the values fired by ```Tangela.OnBeat```. Built-in presets are:
+- `Default`: input `0.0`-`1.0` → output `0.0`-`1.0`
 - `Punchy`: input `0.3`–`0.8` → output `0.8`–`1.0` (only strong hits register, and they hit hard)
 - `Subtle`: input `0.2`–`0.9` → output `0.7`–`0.85` (a gentle pulse that never fully rests)
 - `Smooth`: input `0.0`–`1.0` → output `0.1`–`0.6` (flattens peaks for continuous, non-jarring motion)
