@@ -96,6 +96,8 @@ for __ , Visualizer in Tangela.Visualizers do
 end
 ```
 Holds every visualizer created via `Tangela:CreateVisualizer2D` or `Tangela:CreateVisualizer3D`.
+>[!CAUTION]
+> Modifying `Visualizer` directly is not recommended and may cause unexpected behavior. Proceed at your own discretion.
 
 ### `Tangela:CreateVisualizer2D`
 ```
