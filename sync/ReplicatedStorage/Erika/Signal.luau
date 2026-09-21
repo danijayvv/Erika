@@ -66,6 +66,9 @@ function Signal:Once<T...>(callback: (T...) -> ()): Connection
 	end)
 	local originalCallback = callback
 	listener.callback = function(...: T...)
+		if not listener.connected then
+			return
+		end
 		listener.connected = false
 		originalCallback(...)
 	end
@@ -77,20 +80,20 @@ function Signal:Fire<T...>(...: T...)
 	if selfImpl._destroyed then
 		return
 	end
-	for __ , listener in selfImpl._listeners do
-		if listener.connected then
-			task.spawn( listener.callback , ... )
-		end
-	end
-	--local listeners = selfImpl._listeners
-	--for Index = #listeners , 1 , -1 do
-	--	local listener = listeners[Index]
+	--for __ , listener in selfImpl._listeners do
 	--	if listener.connected then
-	--		listener.callback( ... )
-	--	else
-	--		table.remove( listeners , Index )
+	--		task.spawn( listener.callback , ... )
 	--	end
 	--end
+	local listeners = selfImpl._listeners
+	for Index = #listeners , 1 , -1 do
+		local listener = listeners[Index]
+		if listener.connected then
+			listener.callback( ... )
+		else
+			table.remove( listeners , Index )
+		end
+	end
 end
 
 function Signal:Destroy()

@@ -23,6 +23,7 @@ export type ErikaType = {
 	Visualizers: { typeof( Visualizer2D.new( Instance.new('AudioAnalyzer') , {} , Instance.new('Frame') ) ) },
 	AnalyzerEntry: typeof( AnalyzerRegistry.new{} ),
 	OnBeat: Signal.Signal<number>,
+	BeatSubscription: BeatRegistry.SubscriptionType,
 
 	_destroyed: boolean,
 	Set : ( ErikaType , SoundPropertiesType           ) -> ErikaType,
@@ -99,7 +100,7 @@ end
 -- ==============================================
 
 function ErikaConstructors:SetBeatPreset( PresetName: BeatRegistry.PresetNameType ): ErikaType
-	BeatRegistry.SetPreset( self.AnalyzerEntry.AudioAnalyzer , PresetName )
+	BeatRegistry.SetPreset( self.BeatSubscription , PresetName )
 	return self
 end
 
@@ -109,7 +110,7 @@ function ErikaConstructors:Destroy()
 	end
 	self._destroyed = true
 	self:ClearVisualizers()
-	BeatRegistry.Unbind( self.AnalyzerEntry.AudioAnalyzer )
+	self.BeatSubscription:Disconnect()
 	self.AnalyzerEntry:Destroy()
 end
 
@@ -118,11 +119,13 @@ function Erika.new( Name: string?, AudioProperties: AnalyzerRegistry.AudioProper
 	if Name ~= nil then
 		AnalyzerEntry:SetName( Name )
 	end
+	local BeatSubscription = BeatRegistry.Bind( AnalyzerEntry.AudioAnalyzer )
 	return setmetatable( {
 		AudioPlayer = AnalyzerEntry.AudioPlayer,
 		Visualizers = {},
 		AnalyzerEntry = AnalyzerEntry,
-		OnBeat = BeatRegistry.Bind( AnalyzerEntry.AudioAnalyzer ),
+		OnBeat = BeatSubscription.Signal,
+		BeatSubscription = BeatSubscription,
 
 		_destroyed = false,
 	} :: ErikaType , ErikaConstructors )

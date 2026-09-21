@@ -11,10 +11,9 @@ local Signal = require('../Signal')
 -- // Variables & Constants
 const clamp = math.clamp
 const max   = math.max
-const min   = math.min
 
 -- // Tables & Types
-local Bindings: { [AudioAnalyzer]: BeatBindingType } = {}
+local Bindings: { [AudioAnalyzer]: BindType } = {}
 local FrequencyBands: { BandType } = {
 	{ Name = "Bass",    MinHz = 20,    MaxHz = 250,   DecayRate = 0.993 , StartBin = 0 , EndBin = 0 , Max = 0 },
 	{ Name = "Beat",    MinHz = 250,   MaxHz = 500,   DecayRate = 0.990 , StartBin = 0 , EndBin = 0 , Max = 0 },
@@ -35,9 +34,15 @@ local Presets: { [PresetNameType]: PresetType } = {
 }
 
 export type BeatRegistryClass = {
-	Bind  : ( AudioAnalyzer , PresetName: PresetNameType? ) -> typeof( Signal.new() ),
+	Bind  : ( AudioAnalyzer , PresetName: PresetNameType? ) -> SubscriptionType,
 	Unbind: ( AudioAnalyzer ) -> (),
-	SetPreset: ( AudioAnalyzer , PresetName: PresetNameType ) -> (),
+	SetPreset: ( Subscription: SubscriptionType , PresetName: PresetNameType ) -> (),
+}
+export type SubscriptionType = {
+	Signal: Signal.Signal<number>,
+	Subscriber: SubscriberType,
+	Disconnected: boolean,
+	Disconnect: ( SubscriptionType ) -> (),
 }
 
 type BandType = { Name: string , MinHz: number , MaxHz: number , DecayRate: number , StartBin: number , EndBin: number , Max: number }
@@ -48,14 +53,15 @@ export type PresetType = {
 	OutputMax: number,
 	Threshold: number?,
 }
-type BeatSubscriberType = {
+type SubscriberType = {
 	Signal: Signal.Signal<number>,
 	Preset: PresetType,
+	Connected: boolean,
 }
-type BeatBindingType = {
+type BindType = {
 	Bands: { BandType },
 	Connection: Signal.Connection,
-	Subscribers: { BeatSubscriberType },
+	Subscribers: { SubscriberType },
 }
 type InfoType = {
 	Bands: { BandType },
@@ -90,42 +96,90 @@ local function Remap( Value: number , Preset: PresetType ): number
 	return Preset.OutputMin + T * ( Preset.OutputMax - Preset.OutputMin )
 end
 
-function BeatRegistry.Bind( AudioAnalyzer: AudioAnalyzer , PresetName: PresetNameType? )
-	local OnBeat = Signal.new()
-	local Existing = Bindings[AudioAnalyzer]
-	if Existing then
-		table.insert( Existing.Subscribers , {
-			Signal = OnBeat,
-			Preset = Presets[ PresetName or 'Default' :: PresetNameType ]
-		} )
-		return OnBeat
+local function RemoveSubscriber( Info: BindType , Subscriber: SubscriberType )
+	for Index = #Info.Subscribers , 1 , -1 do
+		if Info.Subscribers[Index] ~= Subscriber then
+			continue
+		end
+		table.remove( Info.Subscribers , Index )
+		return
 	end
-	
-	local Bands = table.clone( FrequencyBands )
-	for Index , Band in Bands do
-		Bands[Index] = table.clone( Band )
+end
+
+local function DestroyBinding( AudioAnalyzer: AudioAnalyzer , Info: BindType )
+	if Bindings[AudioAnalyzer] ~= Info then
+		return
 	end
-	local Info: BeatBindingType = {
-		Bands = Bands,
-		Connection = nil :: any,
-		Subscribers = { {
-			Signal = OnBeat,
-			Preset = Presets[ PresetName or 'Default' :: PresetNameType ],
-		} }
+	if Info.Connection then
+		Info.Connection:Disconnect()
+	end
+	for __ , Subscriber in Info.Subscribers do
+		Subscriber.Connected = false
+		Subscriber.Signal:Destroy()
+	end
+	table.clear( Info.Subscribers )
+	SpectrumRegistry.Unbind( AudioAnalyzer )
+	Bindings[AudioAnalyzer] = nil
+end
+
+function BeatRegistry.Bind( AudioAnalyzer: AudioAnalyzer , PresetName: PresetNameType? ): SubscriptionType
+	local Subscriber: SubscriberType = {
+		Signal = Signal.new(),
+		Preset = Presets[ PresetName or 'Default' :: PresetNameType ],
+		Connected = true,
 	}
-	Bindings[AudioAnalyzer] = Info
-	Info.Connection = SpectrumRegistry.Bind( AudioAnalyzer ):Connect(function( Frame )
-		local Total = 0
-		for __ , Band in Bands do
-			Total += CalculateBand( Frame.Values , Band )
+	local Info: BindType = Bindings[AudioAnalyzer]
+	if not Info then
+		local Bands = table.clone( FrequencyBands )
+		for Index , Band in Bands do
+			Bands[Index] = table.clone( Band )
 		end
-		local Average = clamp( Total / #Bands , 0 , 1 )
-		for __ , Subscriber in Info.Subscribers do
-			local Value = Remap( Average , Subscriber.Preset )
-			Subscriber.Signal:Fire( Value )
-		end
-	end)
-	return OnBeat
+		local NInfo = {
+			Bands = Bands,
+			Connection = nil :: any,
+			Subscribers = {},
+		} :: BindType
+		Bindings[AudioAnalyzer] = NInfo
+		
+		NInfo.Connection = SpectrumRegistry.Bind( AudioAnalyzer ):Connect(function( Frame )
+			local Total = 0
+			for __ , Band in Bands do
+				Total += CalculateBand( Frame.Values , Band )
+			end
+			local Average = clamp( Total / #NInfo.Bands , 0 , 1 )
+			for Index = #NInfo.Subscribers , 1 , -1 do
+				local Current = NInfo.Subscribers[Index]
+				if not Current.Connected then
+					table.remove( NInfo.Subscribers , Index )
+				else
+					local Value = Remap( Average , Current.Preset )
+					Current.Signal:Fire( Value )
+				end
+			end
+		end)
+		Info = NInfo
+	end
+	table.insert( Info.Subscribers , Subscriber )
+	
+	local Subscription: SubscriptionType
+	Subscription = {
+		Signal = Subscriber.Signal,
+		Subscriber = Subscriber,
+		Disconnected = false,
+		Disconnect = function()
+			if Subscription.Disconnected then
+				return
+			end
+			Subscription.Disconnected = true
+			Subscriber.Connected = false
+			RemoveSubscriber( Info , Subscriber )
+			local CurrentInfo = Bindings[AudioAnalyzer]
+			if CurrentInfo == Info and #Info.Subscribers == 0 then
+				DestroyBinding( AudioAnalyzer , Info )
+			end
+		end,
+	}
+	return Subscription
 end
 
 
@@ -134,25 +188,18 @@ function BeatRegistry.Unbind( AudioAnalyzer: AudioAnalyzer )
 	if not Info then
 		return
 	end
-	if Info.Connection then
-		Info.Connection:Disconnect()
-	end
-	SpectrumRegistry.Unbind( AudioAnalyzer )
-	Bindings[AudioAnalyzer] = nil
+	DestroyBinding( AudioAnalyzer , Info )
 end
 
-function BeatRegistry.SetPreset( AudioAnalyzer: AudioAnalyzer , PresetName: PresetNameType )
-	local Info = Bindings[AudioAnalyzer]
-	if not Info then
+function BeatRegistry.SetPreset( Subscription: SubscriptionType , PresetName: PresetNameType )
+	if Subscription.Disconnected then
 		return
 	end
 	local Preset = Presets[PresetName]
 	if not Preset then
 		return
 	end
-	for __ , Subscriber in Info.Subscribers do
-		Subscriber.Preset = Preset
-	end
+	Subscription.Subscriber.Preset = Preset
 end
 
 do

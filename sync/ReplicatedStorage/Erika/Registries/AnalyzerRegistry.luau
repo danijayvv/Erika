@@ -87,10 +87,10 @@ end
 -- ==============================================
 
 function AnalyzerRegistry:Destroy()
-	if not self.OwnsAudioAnalyzer and self.AudioAnalyzer.Parent then
+	if self.OwnsAudioAnalyzer and self.AudioAnalyzer.Parent then
 		task.defer( self.AudioAnalyzer.Destroy , self.AudioAnalyzer )
 	end
-	if not self.OwnsAudioPlayer and self.AudioPlayer.Parent then
+	if self.OwnsAudioPlayer and self.AudioPlayer.Parent then
 		task.defer( self.AudioPlayer.Destroy , self.AudioPlayer )
 	end
 	setmetatable( self , nil )
@@ -98,11 +98,12 @@ end
 
 function AnalyzerRegistry.new( AudioProperties: AudioPropertiesType )
 	local AudioPlayer = AudioProperties.AudioPlayer
-	local OwnsAudioPlayer = typeof( AudioPlayer ) == 'AudioPlayer'
-	if not OwnsAudioPlayer then
+	local OwnsAudioPlayer = false
+	if not AudioPlayer then
 		AudioPlayer = Instance.new('AudioPlayer')
 		AudioPlayer.Parent = SoundService
-
+		OwnsAudioPlayer = true
+		
 		local AudioDeviceOutput = Instance.new('AudioDeviceOutput')
 		AudioDeviceOutput.Parent = AudioPlayer
 		local OutputWire = Instance.new('Wire')
@@ -112,7 +113,7 @@ function AnalyzerRegistry.new( AudioProperties: AudioPropertiesType )
 	end
 
 	local AudioAnalyzer = AudioProperties.AudioAnalyzer
-	local OwnsAudioAnalyzer = typeof( AudioAnalyzer ) == 'AudioAnalyzer'
+	local OwnsAudioAnalyzer = false
 	if not AudioAnalyzer then
 		AudioAnalyzer = Instance.new('AudioAnalyzer')
 		AudioAnalyzer.WindowSize = AudioProperties.WindowSize or Enum.AudioWindowSize.Large
@@ -121,6 +122,7 @@ function AnalyzerRegistry.new( AudioProperties: AudioPropertiesType )
 		AnalyzeWire.SourceInstance = AudioPlayer
 		AnalyzeWire.TargetInstance = AudioAnalyzer
 		AnalyzeWire.Parent = AudioPlayer
+		OwnsAudioAnalyzer = true
 	end
 
 	return setmetatable( {
