@@ -6,9 +6,10 @@ local ErikaConstructors = {} :: ErikaType & { __index: ErikaType }
 ErikaConstructors.__index = ErikaConstructors
 
 -- // Services & Requires
-local AnalyzerRegistry   = require('./Erika/Registries/AnalyzerRegistry')
-local BeatRegistry       = require('./Erika/Registries/BeatRegistry')
-local Visualizer2D = require('./Erika/Registries/Visualizer/Visualizer2D')
+local AnalyzerRegistry   = require('@self/Registries/AnalyzerRegistry')
+local BeatRegistry       = require('@self/Registries/BeatRegistry')
+local SpectrumRegistry   = require('@self/Registries/SpectrumRegistry')
+local Visualizer2D       = require('@self/Registries/Visualizer/Visualizer2D')
 
 local Signal = require('./Erika/Signal')
 
@@ -16,6 +17,7 @@ local Signal = require('./Erika/Signal')
 
 -- // Tables & Types
 local BeatSubscriptions: { [ErikaType]: BeatRegistry.SubscriptionType } = setmetatable( {} , { __mode = "k" } )
+local SpectrumConnections: { [ErikaType]: { { Disconnect: ( any ) -> () } } } = setmetatable( {} , { __mode = "k" } )
 
 export type ErikaClass = {
 	new: ( Name: string? , AudioProperties: AnalyzerRegistry.AudioPropertiesType? ) -> ErikaType,
@@ -35,6 +37,7 @@ export type ErikaType = {
 	ClearVisualizers  : ( ErikaType ) -> ErikaType,
 
 	SetBeatPreset: ( ErikaType , PresetName: BeatRegistry.PresetNameType ) -> ErikaType,
+	Connect: ( ErikaType , ( SpectrumRegistry.SpectrumFrameType ) -> () ) -> { Disconnect: ( This_Is_A_Fake_Connection_This_Parameter_Does_Not_Matter: any ) -> () },
 	Destroy: ( ErikaType ) -> (),
 }
 
@@ -108,6 +111,40 @@ function ErikaConstructors:SetBeatPreset( PresetName: BeatRegistry.PresetNameTyp
 	return self
 end
 
+local function CreateFalseConnection( AudioAnalyzer: AudioAnalyzer , Connection: Signal.Connection ): { Disconnect: ( any ) -> () }
+	local Disconnected = false
+	local Table = {}
+	function Table:Disconnect()
+		if Disconnected then
+			return
+		end
+		Disconnected = true
+		if Connection then
+			Connection:Disconnect()
+		end
+		SpectrumRegistry.Unbind( AudioAnalyzer )
+	end
+	return Table
+end
+function ErikaConstructors:Connect( Callback: ( SpectrumRegistry.SpectrumFrameType ) -> () ): { Disconnect: ( any ) -> () }
+	if self._destroyed then
+		error( "Cannot connect to a destroyed Erika object." )
+	end
+	local FalseConnection = CreateFalseConnection(
+		self.AnalyzerEntry.AudioAnalyzer,
+		SpectrumRegistry.Bind( self.AnalyzerEntry.AudioAnalyzer ):Connect( Callback )
+	)
+	
+	local Connections = SpectrumConnections[self]
+	if not Connections then
+		Connections = {}
+		SpectrumConnections[self] = Connections
+	end
+	table.insert( Connections , FalseConnection )
+	
+	return FalseConnection
+end
+
 function ErikaConstructors:Destroy()
 	if self._destroyed then
 		return
@@ -118,6 +155,17 @@ function ErikaConstructors:Destroy()
 	if BeatSubscription then
 		BeatSubscription:Disconnect()
 		BeatSubscriptions[self] = nil
+	end
+	local Connections = SpectrumConnections[self]
+	if Connections then
+		for __ , Connection in Connections do
+			if not Connection then
+				continue
+			end
+			Connection:Disconnect()
+		end
+		table.clear( Connections )
+		SpectrumConnections[self] = nil
 	end
 	self.AnalyzerEntry:Destroy()
 end

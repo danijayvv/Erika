@@ -33,7 +33,7 @@ type BindingInfoType = {
 	RefCount: number,
 }
 
-type SpectrumFrameType = {
+export type SpectrumFrameType = {
 	AGCMax: number,
 	Values: { number },
 	PrefixValues: { number },
