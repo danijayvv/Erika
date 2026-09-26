@@ -92,7 +92,7 @@ end
 
 -- ==============================================
 
-function ErikaConstructors:CreateVisualizer2D( ParentContainer: GuiObject , Info: Visualizer2D.Info2D? , ContainerAlignment: Visualizer2D.AlignmentType , BarAlignment: Visualizer2D.AlignmentType ): ErikaType
+function ErikaConstructors:CreateVisualizer2D( ParentContainer: GuiObject , Info: Visualizer2D.Info2D? , ContainerAlignment: Visualizer2D.AlignmentType? , BarAlignment: Visualizer2D.AlignmentType? ): ErikaType
 	local Visualizer = Visualizer2D.new( self.AnalyzerEntry.AudioAnalyzer , Info or {} , ParentContainer , ContainerAlignment , BarAlignment )
 	table.insert( self.Visualizers , Visualizer )
 	return self

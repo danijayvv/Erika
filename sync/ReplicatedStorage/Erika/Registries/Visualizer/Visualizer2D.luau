@@ -45,12 +45,15 @@ function Visualizer2D.new( AudioAnalyzer: AudioAnalyzer , Info: Info2D , ParentC
 	VisualizerContainer.Parent = ParentContainer
 	
 	local MergedInfo = VisualizerBase.MergeDefaultInfo( DefaultInfo , Info ) :: Info2D & { [string]: any }
-	local self = VisualizerBase.new( AudioAnalyzer , MergedInfo.BarCount , {
+	local BarCount = math.max( 1 , math.floor( MergedInfo.BarCount ) )
+	local BarGap = math.clamp( MergedInfo.BarGap , 0 , 1 / BarCount - 0.001 )
+	local self = VisualizerBase.new( AudioAnalyzer , BarCount , {
 		VisualizerContainer = VisualizerContainer,
 		Bars = {},
-		BarWidth = ( 1 / MergedInfo.BarCount ) - MergedInfo.BarGap,
-
-		BarDecay = MergedInfo.BarDecay,
+		BarWidth = ( 1 / BarCount ) - BarGap,
+		
+		BarGap = BarGap,
+		BarDecay = math.clamp( MergedInfo.BarDecay , 0 , 1 ),
 		BarMaxHeight = MergedInfo.BarMaxHeight,
 		BarColorLow = MergedInfo.BarColorLow,
 		BarColorHigh = MergedInfo.BarColorHigh,
@@ -71,12 +74,22 @@ function Visualizer2D.new( AudioAnalyzer: AudioAnalyzer , Info: Info2D , ParentC
 		Bar.Parent = VisualizerContainer
 		self.Bars[Index] = Bar
 	end
-	return self
+	return self :: VisualizerBase.VisualizerBaseType & Visualizer2DType
 end
 
 function Visualizer2D:RenderBar( Index: number , Value: number )
 	self.Bars[Index].Size = UDim2.fromScale( self.BarWidth , Value * self.BarMaxHeight :: number )
 	self.Bars[Index].BackgroundColor3 = self.BarColorLow:Lerp( self.BarColorHigh , Value )
+end
+
+function Visualizer2D.Destroy( self: VisualizerBase.VisualizerBaseType & Visualizer2DType )
+	if self._destroyed then
+		return
+	end
+	VisualizerBase.Destroy( self :: any )
+	if self.VisualizerContainer then
+		self.VisualizerContainer:Destroy()
+	end
 end
 
 return Visualizer2D

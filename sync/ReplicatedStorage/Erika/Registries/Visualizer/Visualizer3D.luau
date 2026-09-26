@@ -39,11 +39,13 @@ function Visualizer3D.new( AudioAnalyzer: AudioAnalyzer , Info: V3DTypes.Info3D 
 	VisualizerContainer.Parent = ParentInstance
 	
 	local MergedInfo = VisualizerBase.MergeDefaultInfo( V3DDefaultInfo , Info ) :: V3DTypes.Info3D & { [string]: any }
-	local self = VisualizerBase.new( AudioAnalyzer , MergedInfo.BarCount , {
+	local BarCount = math.max( 1 , math.floor( MergedInfo.BarCount ) )
+	local self = VisualizerBase.new( AudioAnalyzer , BarCount , {
 		VisualizerContainer = VisualizerContainer,
 		Bars = {},
 		
-		BarDecay = MergedInfo.BarDecay,
+		BarGap = math.clamp( MergedInfo.BarGap , 0 , 1 / BarCount - 0.001 ),
+		BarDecay = math.clamp( MergedInfo.BarDecay , 0 , 1 ),
 		BarMaxHeight = MergedInfo.BarMaxHeight,
 		BarColorLow = MergedInfo.BarColorLow,
 		BarColorHigh = MergedInfo.BarColorHigh,

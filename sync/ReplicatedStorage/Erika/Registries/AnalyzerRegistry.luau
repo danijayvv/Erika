@@ -71,6 +71,10 @@ function AnalyzerRegistry:SetVolume( Volume: number? ): AnalyzerRegistryType
 		warnCNA( 'Volume' , nil , 'number' )
 		return self
 	end
+	if Volume == 0 then
+		self.AudioPlayer.Volume = 0
+		return self
+	end
 	self.AudioPlayer.Volume = Volume or 0.5
 	return self
 end
