@@ -4,9 +4,9 @@
 local BeatRegistry = {} :: BeatRegistryClass
 
 -- // Services & Requires
-local SpectrumRegistry = require('./SpectrumRegistry')
+const SpectrumRegistry = require('./SpectrumRegistry')
 
-local Signal = require('../Signal')
+const Signal = require('../Signal')
 
 -- // Variables & Constants
 const clamp = math.clamp
@@ -14,16 +14,16 @@ const max   = math.max
 
 -- // Tables & Types
 local Bindings: { [AudioAnalyzer]: BindType } = {}
-local FrequencyBands: { BandType } = {
+local FrequencyBands: { BandType } = table.freeze( {
 	{ Name = "Bass",    MinHz = 20,    MaxHz = 250,   DecayRate = 0.993 , StartBin = 0 , EndBin = 0 , Max = 0 },
 	{ Name = "Beat",    MinHz = 250,   MaxHz = 500,   DecayRate = 0.990 , StartBin = 0 , EndBin = 0 , Max = 0 },
 	{ Name = "Mellow",  MinHz = 500,   MaxHz = 2000,  DecayRate = 0.987 , StartBin = 0 , EndBin = 0 , Max = 0 },
 	{ Name = "High",    MinHz = 2000,  MaxHz = 8000,  DecayRate = 0.983 , StartBin = 0 , EndBin = 0 , Max = 0 },
 	{ Name = "Highest", MinHz = 8000,  MaxHz = 20000, DecayRate = 0.978 , StartBin = 0 , EndBin = 0 , Max = 0 },
-}
+} )
 
 export type PresetNameType = 'Default' | 'Punchy' | 'Subtle' | 'Smooth' | 'Gate_Lw' | 'Gate_Av' | 'Gate_Hi'
-local Presets: { [PresetNameType]: PresetType } = {
+local Presets = table.freeze( {
 	['Default'] = { InputMin = 0,   InputMax = 1,   OutputMin = 0,   OutputMax = 1    },
 	['Punchy']  = { InputMin = 0.3, InputMax = 0.8, OutputMin = 0.8, OutputMax = 1    },
 	['Subtle']  = { InputMin = 0.2, InputMax = 0.9, OutputMin = 0.7, OutputMax = 0.85 },
@@ -31,7 +31,7 @@ local Presets: { [PresetNameType]: PresetType } = {
 	['Gate_Lw'] = { InputMin = 0,   InputMax = 1,   OutputMin = 0,   OutputMax = 1, Threshold = 0.5 },
 	['Gate_Av'] = { InputMin = 0,   InputMax = 1,   OutputMin = 0,   OutputMax = 1, Threshold = 0.7 },
 	['Gate_Hi'] = { InputMin = 0,   InputMax = 1,   OutputMin = 0,   OutputMax = 1, Threshold = 0.9 },
-}
+} ) :: { [PresetNameType]: PresetType }
 
 export type BeatRegistryClass = {
 	Bind  : ( AudioAnalyzer , PresetName: PresetNameType? ) -> SubscriptionType,

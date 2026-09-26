@@ -5,8 +5,8 @@ local VisualizerBase = {}
 VisualizerBase.__index = VisualizerBase
 
 -- // Services & Requires
-local SpectrumRegistry = require('../SpectrumRegistry')
-local Signal = require('../../Signal')
+const SpectrumRegistry = require('../SpectrumRegistry')
+const Signal = require('../../Signal')
 
 -- // Variables & Constants
 const RAW_BIN_COUNT = SpectrumRegistry.RAW_BIN_COUNT
@@ -28,10 +28,29 @@ export type VisualizerBaseType = {
 	RenderBar: ( self: VisualizerBaseType , Index: number , Value: number ) -> (),
 	Destroy: ( self: VisualizerBaseType ) -> (),
 }
-
 export type BinRange = { StartBin: number, EndBin: number }
 
+export type InfoBase = {
+	BarCount: number?,
+	BarGap: number?,
+	BarDecay: number?,
+	BarMaxHeight: number?,
+	BarColorLow: Color3?,
+	BarColorHigh: Color3?,
+	
+	MinHz: number?,
+	MaxHz: number?,
+}
+
 -- // Functions
+
+function VisualizerBase.MergeDefaultInfo<T, U>( DefaultInfo: T & {} , GivenInfo: (U?) & ({}?) ): T & U
+	local MergedInfo = table.clone( DefaultInfo ) :: T & U
+	for Key , Value in GivenInfo :: { [any]: any } do
+		( MergedInfo :: any )[Key] = Value
+	end
+	return MergedInfo
+end
 
 local function GetRangeAverage(PrefixValues: { number }, StartBin: number, EndBin: number): number
 	local StartSum = StartBin > 1 and PrefixValues[StartBin - 1] or 0

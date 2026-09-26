@@ -6,12 +6,14 @@ local ErikaConstructors = {} :: ErikaType & { __index: ErikaType }
 ErikaConstructors.__index = ErikaConstructors
 
 -- // Services & Requires
-local AnalyzerRegistry   = require('@self/Registries/AnalyzerRegistry')
-local BeatRegistry       = require('@self/Registries/BeatRegistry')
-local SpectrumRegistry   = require('@self/Registries/SpectrumRegistry')
-local Visualizer2D       = require('@self/Registries/Visualizer/Visualizer2D')
+const AnalyzerRegistry   = require('@self/Registries/AnalyzerRegistry')
+const BeatRegistry       = require('@self/Registries/BeatRegistry')
+const SpectrumRegistry   = require('@self/Registries/SpectrumRegistry')
+const Visualizer2D       = require('@self/Registries/Visualizer/Visualizer2D')
+const Visualizer3D       = require('@self/Registries/Visualizer/Visualizer3D')
+const V3DTypes = require('@self/Registries/Visualizer/Visualizer3D/V3DTypes')
 
-local Signal = require('./Erika/Signal')
+const Signal = require('./Erika/Signal')
 
 -- // Variables & Constants
 
@@ -23,7 +25,10 @@ export type ErikaClass = {
 }
 export type ErikaType = {
 	AudioPlayer: AudioPlayer,
-	Visualizers: { typeof( Visualizer2D.new( Instance.new('AudioAnalyzer') , {} , Instance.new('Frame') ) ) },
+	Visualizers: {
+		typeof( Visualizer2D.new( Instance.new('AudioAnalyzer') , {} , Instance.new('Frame') ) ) |
+		typeof( Visualizer3D.new( Instance.new('AudioAnalyzer') , {} , Instance.new('Folder') ) )
+	},
 	AnalyzerEntry: typeof( AnalyzerRegistry.new{} ),
 	OnBeat: Signal.Signal<number>,
 	OnSpectrum: SpectrumRegistry.SpectrumSignalType,
@@ -32,7 +37,8 @@ export type ErikaType = {
 	Set : ( ErikaType , SoundPropertiesType           ) -> ErikaType,
 	Play: ( ErikaType , SoundPropertiesType? | number ) -> ErikaType,
 	Stop: ( ErikaType , ResetTimePosition: boolean?   ) -> ErikaType,
-
+	
+	CreateVisualizer3D: ( ErikaType , ParentInstance : Instance  , Info: V3DTypes.Info3D? ) -> ErikaType,
 	CreateVisualizer2D: ( ErikaType , ParentContainer: GuiObject , Info: Visualizer2D.Info2D? , ContainerAlignment: Visualizer2D.AlignmentType? , BarAlignment: Visualizer2D.AlignmentType? ) -> ErikaType,
 	ClearVisualizers  : ( ErikaType ) -> ErikaType,
 
@@ -88,6 +94,12 @@ end
 
 function ErikaConstructors:CreateVisualizer2D( ParentContainer: GuiObject , Info: Visualizer2D.Info2D? , ContainerAlignment: Visualizer2D.AlignmentType , BarAlignment: Visualizer2D.AlignmentType ): ErikaType
 	local Visualizer = Visualizer2D.new( self.AnalyzerEntry.AudioAnalyzer , Info or {} , ParentContainer , ContainerAlignment , BarAlignment )
+	table.insert( self.Visualizers , Visualizer )
+	return self
+end
+
+function ErikaConstructors:CreateVisualizer3D( ParentInstance: Instance , Info: V3DTypes.Info3D? ): ErikaType
+	local Visualizer = Visualizer3D.new( self.AnalyzerEntry.AudioAnalyzer , Info or {} , ParentInstance )
 	table.insert( self.Visualizers , Visualizer )
 	return self
 end

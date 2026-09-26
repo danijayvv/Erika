@@ -1,7 +1,7 @@
 -- © 2026 iM1GHTB3DANI/danijayvv
 --!strict
 
-local VisualizerBase = require('./VisualizerBase')
+const VisualizerBase = require('./VisualizerBase')
 local Visualizer2D = setmetatable( {} , { __index = VisualizerBase } )
 Visualizer2D.__index = Visualizer2D
 
@@ -19,26 +19,21 @@ local DefaultInfo = table.freeze( {
 	BarColorHigh = Color3.fromRGB( 255 , 0 , 0 ),
 } )
 
-export type Info2D = {
-	BarCount: number?,
-	BarGap: number?,
-	BarDecay: number?,
-	BarMaxHeight: number?,
-	BarColorLow: Color3?,
-	BarColorHigh: Color3?,
-	MinHz: number?,
-	MaxHz: number?,
-}
-
 export type AlignmentType = 'Top' | 'Bottom' | 'Center'
-export type Visualizer2DType = Info2D & { VisualizerContainer: Frame , Bars: BarsType , BarWidth: number }
+
+export type Info2D = VisualizerBase.InfoBase & {}
+export type Visualizer2DType = Info2D & {
+	VisualizerContainer: Frame,
+	Bars: BarsType,
+	BarWidth: number
+} & typeof( DefaultInfo )
 type BarsType = { [number]: Frame }
 
 -- // Functions
 
 function Visualizer2D.new( AudioAnalyzer: AudioAnalyzer , Info: Info2D , ParentContainer: GuiObject , ContainerAlignment: AlignmentType? , BarAlignment: AlignmentType? ): VisualizerBase.VisualizerBaseType & Visualizer2DType
 	local VisualizerContainer = Instance.new('Frame')
-	VisualizerContainer.Name = 'VisualizerContainer'
+	VisualizerContainer.Name = 'Visualizer2DContainer'
 	
 	VisualizerContainer.AnchorPoint = Vector2.new( 0.5 , 0.5 )
 	VisualizerContainer.Position = UDim2.fromScale( 0.5 , ( ContainerAlignment == 'Top' and 0 ) or ( ContainerAlignment == 'Bottom' and 1 ) or 0.5 )
@@ -49,39 +44,33 @@ function Visualizer2D.new( AudioAnalyzer: AudioAnalyzer , Info: Info2D , ParentC
 	VisualizerContainer.ZIndex = -1
 	VisualizerContainer.Parent = ParentContainer
 	
-	local MergedInfo = table.clone( DefaultInfo ) :: Info2D & { [string]: any }
-	for Key , Value in Info :: Info2D & { [string]: any } do
-		MergedInfo[Key] = Value
-	end
-	
-	local BarWidth = ( 1 / MergedInfo.BarCount ) - MergedInfo.BarGap
-	local Bars: BarsType = {}
-	for Index = 1, MergedInfo.BarCount do
-		local Bar = Instance.new('Frame')
-		
-		Bar.AnchorPoint = ( BarAlignment == 'Top' and Vector2.new( 0 , 0 ) ) or ( BarAlignment == 'Bottom' and Vector2.new( 0 , 1 ) ) or Vector2.new( 0 , 0.5 )
-		Bar.Position = UDim2.fromScale( ( Index - 1 ) / MergedInfo.BarCount , ( BarAlignment == 'Top' and -0.01 ) or ( BarAlignment == 'Bottom' and 1.01 ) or 0.5 )
-		
-		local IsBottom = Bar.AnchorPoint.Y >= 0.5
-		Bar.Size = UDim2.fromScale( BarWidth , 0 )
-		Bar.BackgroundTransparency = 0.5
-		Bar.BackgroundColor3 = MergedInfo.BarColorLow
-		Bar.BorderSizePixel = 0
-		Bar.Parent = VisualizerContainer
-		Bars[Index] = Bar
-	end
-	
+	local MergedInfo = VisualizerBase.MergeDefaultInfo( DefaultInfo , Info ) :: Info2D & { [string]: any }
 	local self = VisualizerBase.new( AudioAnalyzer , MergedInfo.BarCount , {
 		VisualizerContainer = VisualizerContainer,
-		Bars = Bars,
-		BarWidth = BarWidth,
-		
+		Bars = {},
+		BarWidth = ( 1 / MergedInfo.BarCount ) - MergedInfo.BarGap,
+
 		BarDecay = MergedInfo.BarDecay,
 		BarMaxHeight = MergedInfo.BarMaxHeight,
 		BarColorLow = MergedInfo.BarColorLow,
 		BarColorHigh = MergedInfo.BarColorHigh,
 	} , MergedInfo.MinHz , MergedInfo.MaxHz )
 	setmetatable( self :: any , Visualizer2D )
+	
+	for Index = 1, MergedInfo.BarCount do
+		local Bar = Instance.new('Frame')
+		Bar.Name = tostring( Index )
+		
+		Bar.AnchorPoint = ( BarAlignment == 'Top' and Vector2.new( 0 , 0 ) ) or ( BarAlignment == 'Bottom' and Vector2.new( 0 , 1 ) ) or Vector2.new( 0 , 0.5 )
+		Bar.Position = UDim2.fromScale( ( Index - 1 ) / MergedInfo.BarCount , ( BarAlignment == 'Top' and -0.01 ) or ( BarAlignment == 'Bottom' and 1.01 ) or 0.5 )
+		
+		Bar.Size = UDim2.fromScale( self.BarWidth , 0 )
+		Bar.BackgroundTransparency = 0.5
+		Bar.BackgroundColor3 = MergedInfo.BarColorLow
+		Bar.BorderSizePixel = 0
+		Bar.Parent = VisualizerContainer
+		self.Bars[Index] = Bar
+	end
 	return self
 end
 

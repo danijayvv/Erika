@@ -5,7 +5,7 @@ local AnalyzerRegistry = {} :: AnalyzerRegistryClass & AnalyzerRegistryType
 AnalyzerRegistry.__index = AnalyzerRegistry
 
 -- // Services & Requires
-local SoundService: SoundService = game:GetService('SoundService')
+const SoundService: SoundService = game:GetService('SoundService')
 
 -- // Variables & Constants
 const rbxassetid = 'rbxassetid://'

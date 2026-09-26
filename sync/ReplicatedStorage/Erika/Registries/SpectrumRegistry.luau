@@ -4,22 +4,20 @@
 local SpectrumRegistry = {}
 
 -- // Services & Requires
-local RunService: RunService = game:GetService('RunService')
-local Signal = require('../Signal')
+const RunService: RunService = game:GetService('RunService')
+const Signal = require('../Signal')
 
 -- // Variables & Constants
-local RAW_BIN_COUNT = 128
-local BIN_COUNT = 512
-local HZ_PER_BIN = ( 44100 / 2 ) / BIN_COUNT
-local MIN_HZ , MAX_HZ = 20 , 20000
-
+const RAW_BIN_COUNT = 128
+const BIN_COUNT = 512
+const HZ_PER_BIN = ( 44100 / 2 ) / BIN_COUNT
+const MIN_HZ , MAX_HZ = 20 , 20000
 SpectrumRegistry.RAW_BIN_COUNT = RAW_BIN_COUNT
-SpectrumRegistry.MIN_HZ = MIN_HZ
-SpectrumRegistry.MAX_HZ = MAX_HZ
+SpectrumRegistry.MIN_HZ , SpectrumRegistry.MAX_HZ = MIN_HZ , MAX_HZ
 
 const max = math.max
 const min = math.min
-local round = math.round
+const round = math.round
 
 -- // Tables & Types
 local Bindings: { [AudioAnalyzer]: BindingInfoType } = {}
